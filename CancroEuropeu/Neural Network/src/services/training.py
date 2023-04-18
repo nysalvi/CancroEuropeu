@@ -51,8 +51,7 @@ class Training:
             losses = self.train_epoch(model, train_loader, optimizer, criterion, device)
             measures_on_train = self.eval_model(model, train_loader, criterion, device)
             measures_on_dev = self.eval_model(model, dev_loader, criterion, device)
-            train_loss = np.mean(losses)
-            measures = {'epoch': e, 'train_loss': train_loss, 'train_acc' : measures_on_train['acc'].round(4), 
+            measures = {'epoch': e, 'train_loss': losses, 'train_acc' : measures_on_train['acc'].round(4), 
                 'dev_loss' : measures_on_dev['loss'], 'dev_acc' : measures_on_dev['acc'].round(4) }
             if (max_val_acc < measures_on_dev['acc'].round(4)):
                 contAcc = -1
