@@ -39,19 +39,19 @@ class Training:
         measures = {'acc' : correct/total}
         return measures
 
-    def train_and_evaluate(self, model, num_epochs, train_loader, test_loader, optimizer, criterion, device: str):
+    def train_and_evaluate(self, model, num_epochs, train_loader, dev_loader, optimizer, criterion, device: str):
         max_val_acc = 0
         e_measures = []
         pbar = tqdm(range(1,num_epochs+1))
         for e in pbar:
             losses = self.train_epoch(model, train_loader, optimizer, criterion, device)
             measures_on_train = self.eval_model(model, train_loader, device)
-            measures_on_test = self.eval_model(model, test_loader, device)
+            measures_on_dev = self.eval_model(model, dev_loader, device)
             train_loss = np.mean(losses)
-            measures = {'epoch': e, 'train_loss': train_loss, 'train_acc' : measures_on_train['acc'].round(4), 'val_acc' : measures_on_test['acc'].round(4) }
-            if (max_val_acc < measures_on_test['acc'].round(4)):
+            measures = {'epoch': e, 'train_loss': train_loss, 'train_acc' : measures_on_train['acc'].round(4), 'dev_acc' : measures_on_dev['acc'].round(4) }
+            if (max_val_acc < measures_on_dev['acc'].round(4)):
                 
-                max_val_acc = measures_on_test['acc'].round(4)
+                max_val_acc = measures_on_dev['acc'].round(4)
                 torch.save(model.state_dict(), './temp/modelo')
 
             pbar.set_postfix(measures)     

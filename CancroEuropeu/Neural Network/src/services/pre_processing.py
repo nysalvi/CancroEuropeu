@@ -20,6 +20,11 @@ class PreProcessing:
                 transforms.ToTensor(),
                 #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])                                                    
                 ]),
+        'dev' : transforms.Compose([
+            transforms.Resize(self.input_size),        
+            transforms.ToTensor(),
+            #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])            
+        ]),
         'test'   : transforms.Compose([
                 transforms.Resize(self.input_size),        
                 transforms.ToTensor(),
@@ -28,6 +33,7 @@ class PreProcessing:
         }
 
         train_images=datasets.ImageFolder(self.dataPath + '/train', transform=data_transforms['train'])
+        dev_images=datasets.ImageFolder(self.dataPath + '/dev', transform=data_transforms['dev'])
         test_images=datasets.ImageFolder(self.dataPath + '/test', transform=data_transforms['test'])
 
-        return NeuralData(train_images, test_images)
+        return NeuralData(train_images, dev_images, test_images)

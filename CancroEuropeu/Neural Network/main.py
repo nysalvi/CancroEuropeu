@@ -37,8 +37,8 @@ neuralData = preProcessing.run()
 
 preLoading = PreLoading()
 label_desc = preLoading.classDistribution(neuralData.train_data)
-preLoading.dataInstances(neuralData.train_data, neuralData.test_data)
-neuralLoader = preLoading.dataLoaders(batch_size, neuralData.train_data, neuralData.test_data)
+preLoading.dataInstances(neuralData.train_data, neuralData.dev_data, neuralData.test_data)
+neuralLoader = preLoading.dataLoaders(batch_size, neuralData.train_data, neuralData.dev_data, neuralData.test_data)
 device = preLoading.selectDevice()
 
 evaluation = Evaluation()
@@ -51,7 +51,7 @@ for neural_model_name in models:
 
     training = Training()
     criterion = nn.CrossEntropyLoss()
-    dataframe, model_ft = training.train_and_evaluate(model_ft, num_epochs, neuralLoader.train_loader.loader, neuralLoader.test_loader.loader, modelFitData.optimizer_ft, criterion, device.device)  
+    dataframe, model_ft = training.train_and_evaluate(model_ft, num_epochs, neuralLoader.train_loader.loader, neuralLoader.dev_loader.loader, modelFitData.optimizer_ft, criterion, device.device)  
     training.exportModel(model_ft, neural_model_name.name)
     training.verify_images(neuralLoader.test_loader.loader, batch_size, model_ft, device.device, label_desc, neural_model_name.name)
     
