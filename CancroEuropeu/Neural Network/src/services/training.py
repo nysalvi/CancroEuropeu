@@ -41,6 +41,7 @@ class Training:
 
     def train_and_evaluate(self, model, num_epochs, train_loader, dev_loader, optimizer, criterion, device: str):
         max_val_acc = 0
+        contAcc = 0
         e_measures = []
         pbar = tqdm(range(1,num_epochs+1))
         for e in pbar:
@@ -50,13 +51,15 @@ class Training:
             train_loss = np.mean(losses)
             measures = {'epoch': e, 'train_loss': train_loss, 'train_acc' : measures_on_train['acc'].round(4), 'dev_acc' : measures_on_dev['acc'].round(4) }
             if (max_val_acc < measures_on_dev['acc'].round(4)):
-                
+                contAcc = -1
                 max_val_acc = measures_on_dev['acc'].round(4)
                 torch.save(model.state_dict(), './temp/modelo')
 
             pbar.set_postfix(measures)     
             e_measures += [measures]
-
+            contAcc+= 1
+            if contAcc >= 10:
+                break
         return pd.DataFrame(e_measures), model
 
     def verify_images(self, test_loader, batch_size, model_ft, device: str, label_desc, model_name):
