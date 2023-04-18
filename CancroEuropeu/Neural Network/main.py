@@ -50,7 +50,7 @@ for neural_model_name in models:
     neuralNetworkModels.verify_predict_before_training(device, neuralLoader, modelFitData)
 
     training = Training()
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss().cuda()
     dataframe, model_ft = training.train_and_evaluate(model_ft, num_epochs, neuralLoader.train_loader.loader, neuralLoader.dev_loader.loader, modelFitData.optimizer_ft, criterion, device.device)  
     training.exportModel(model_ft, neural_model_name.name)
     training.verify_images(neuralLoader.test_loader.loader, batch_size, model_ft, device.device, label_desc, neural_model_name.name)
