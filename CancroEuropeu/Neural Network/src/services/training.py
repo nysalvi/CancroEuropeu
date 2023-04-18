@@ -26,17 +26,20 @@ class Training:
         model.eval()
         return np.mean(losses)
 
-    def eval_model(self, model, loader, device: str):
+    def eval_model(self, model, loader, criterion, device: str):
         measures = []
         total = 0
         correct = 0
+        losses = []
         for X, y in loader:                
             X, y = X.to(device), y.to(device)             
             output = model(X)                      
             _, y_pred = torch.max(output, 1)
             total += len(y)
+            loss = criterion(output, y)
+            losses.append(loss.item()) 
             correct += (y_pred == y).sum().cpu().data.numpy()
-        measures = {'acc' : correct/total}
+        measures = {'loss': np.mean(losses), 'acc' : correct/total}
         return measures
 
     def train_and_evaluate(self, model, num_epochs, train_loader, dev_loader, optimizer, criterion, device: str):
@@ -46,10 +49,11 @@ class Training:
         pbar = tqdm(range(1,num_epochs+1))
         for e in pbar:
             losses = self.train_epoch(model, train_loader, optimizer, criterion, device)
-            measures_on_train = self.eval_model(model, train_loader, device)
-            measures_on_dev = self.eval_model(model, dev_loader, device)
+            measures_on_train = self.eval_model(model, train_loader, criterion, device)
+            measures_on_dev = self.eval_model(model, dev_loader, criterion, device)
             train_loss = np.mean(losses)
-            measures = {'epoch': e, 'train_loss': train_loss, 'train_acc' : measures_on_train['acc'].round(4), 'dev_acc' : measures_on_dev['acc'].round(4) }
+            measures = {'epoch': e, 'train_loss': train_loss, 'train_acc' : measures_on_train['acc'].round(4), 
+                    'dev_loss' : measures_on_dev['loss'], 'dev_acc' : measures_on_dev['acc'].round(4) }
             if (max_val_acc < measures_on_dev['acc'].round(4)):
                 contAcc = -1
                 max_val_acc = measures_on_dev['acc'].round(4)
