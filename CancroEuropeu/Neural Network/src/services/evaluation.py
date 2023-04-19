@@ -9,13 +9,14 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
-
+from torch.utils.tensorboard import SummaryWriter
 
 class Evaluation:
     h_list_val: array
 
     def __init__(self) -> None:
         self.h_list_val = []
+        Evaluation.Writer = SummaryWriter(f"./output/{model_name}/lr_{lr}")
         pass
 
     def evaluate_model(self, y_true, y_pred, pos_label=1) -> any:
@@ -63,6 +64,13 @@ class Evaluation:
         h_val = self.evaluate_model(y_true, y_pred)
         h_val['model_name'] = model_name
         self.h_list_val.append(h_val)
+
+        Evaluation.Writer.add_scalar("Test/Loss", h_val['loss'])
+        Evaluation.Writer.add_scalar("Test/Accuracy", h_val['acc'])
+        Evaluation.Writer.add_scalar("Test/F1", h_val['f1'])
+        Evaluation.Writer.add_scalar("Test/Precision", h_val['prec'])
+        Evaluation.Writer.add_scalar("Test/Recall", h_val['recall'])
+        Evaluation.Writer.flush()
 
         h_list_df = pd.DataFrame(output_stacked)
         os.makedirs('output/result/output_data', exist_ok=True)
