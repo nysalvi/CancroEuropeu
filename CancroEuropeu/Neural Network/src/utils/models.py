@@ -1,5 +1,5 @@
 from array import array
-from src.model.enums.model_name_enum import ModelName
+from ..model.enums.model_name_enum import ModelName
 
 class Models:
     @staticmethod
