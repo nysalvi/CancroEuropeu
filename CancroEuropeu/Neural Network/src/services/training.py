@@ -1,3 +1,4 @@
+from sklearn.metrics import roc_auc_score, roc_curve, auc
 from torch.utils.tensorboard import SummaryWriter
 from tqdm.auto import tqdm
 import numpy as np
