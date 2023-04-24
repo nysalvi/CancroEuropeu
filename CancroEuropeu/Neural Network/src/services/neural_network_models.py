@@ -1,10 +1,10 @@
 import torch
 from torchvision import models
 from torch import nn, optim
-from src.model.enums.model_name_enum import ModelName
-from src.model.neural_loader import NeuralLoader
-from src.model.device_data import DeviceData
-from src.model.model_fit_data import ModelFitData
+from ..model.enums.model_name_enum import ModelName
+from ..model.neural_loader import NeuralLoader
+from ..model.device_data import DeviceData
+from ..model.model_fit_data import ModelFitData
 
 class NeuralNetworkModels:
     def set_parameter_requires_grad(self, model, feature_extracting):
