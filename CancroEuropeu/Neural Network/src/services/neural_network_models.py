@@ -99,7 +99,7 @@ class NeuralNetworkModels:
 
         return model_ft, input_size
 
-    def optimize_model(self, device, feature_extract, model_ft) -> ModelFitData:
+    def optimize_model(self, device:str, feature_extract, model_ft, lr:float=0.001, momentum:float=0.9) -> ModelFitData:
         model_ft = model_ft.to(device)
 
         params_to_update = model_ft.parameters()
@@ -115,7 +115,7 @@ class NeuralNetworkModels:
                 if param.requires_grad == True:
                     print("\t",name)
         
-        optimizer_ft = optim.SGD(params_to_update, lr=0.001, momentum=0.9)
+        optimizer_ft = optim.SGD(params_to_update, lr=lr, momentum=momentum)
         return ModelFitData(optimizer_ft, model_ft)
 
     def verify_predict_before_training(self, deviceData: DeviceData, neuralLoader: NeuralLoader, modelFitData: ModelFitData):
