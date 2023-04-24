@@ -1,8 +1,8 @@
 import pandas as pd
 import torch
 import torch.utils.data as data_utils
-from src.model.neural_loader import NeuralLoader
-from src.model.device_data import DeviceData
+from ..model.neural_loader import NeuralLoader
+from ..model.device_data import DeviceData
 
 class PreLoading:
     def classDistribution(self, train_data) -> any:
