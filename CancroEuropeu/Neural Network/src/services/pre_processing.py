@@ -1,5 +1,5 @@
 from torchvision import datasets, transforms
-from src.model.neural_data import NeuralData
+from ..model.neural_data import NeuralData
 
 class PreProcessing:
     input_size: any
