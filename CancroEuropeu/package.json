@@ -1,0 +1,10 @@
+{
+    "name": "cancro_neural_network",
+    "version": "1.0.0",
+    "scripts": {
+        "EnableLongPath": "REG ADD HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f",
+        "install": "pip install -r requirements.txt",
+        "save-dependency": "pip freeze > requirements.txt"
+    },
+    "private": true
+}
