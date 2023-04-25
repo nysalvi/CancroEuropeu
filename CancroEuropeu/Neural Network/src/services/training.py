@@ -33,14 +33,15 @@ class Training:
         total = 0
         correct = 0
         losses = []
-        for X, y in loader:                
-            X, y = X.to(device), y.to(device)             
-            output = model(X)                      
-            _, y_pred = torch.max(output, 1)
-            total += len(y)
-            loss = criterion(output, y)
-            losses.append(loss.item())             
-            correct += (y_pred == y).sum().cpu().data.numpy()
+        with torch.no_grad():
+            for X, y in loader:                
+                X, y = X.to(device), y.to(device)             
+                output = model(X)                      
+                _, y_pred = torch.max(output, 1)
+                total += len(y)
+                loss = criterion(output, y)
+                losses.append(loss.item())             
+                correct += (y_pred == y).sum().cpu().data.numpy()
         measures = {'loss' : np.mean(losses), 'acc' : correct/total}
         return measures
 
