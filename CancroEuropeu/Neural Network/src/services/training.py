@@ -45,8 +45,7 @@ class Training:
         measures = {'loss' : np.mean(losses), 'acc' : correct/total}
         return measures
 
-    def train_and_evaluate(self, model, num_epochs, train_loader, dev_loader, optimizer, criterion, device: str):
-        #lr = optimizer.param_groups[0]['lr']        
+    def train_and_evaluate(self, model, num_epochs, train_loader, dev_loader, optimizer, criterion, device: str):                
         max_val_acc = 0
         contAcc = 0
         e_measures = []
@@ -72,7 +71,7 @@ class Training:
             e_measures += [measures]
 
             contAcc+= 1
-            if contAcc >= 10:
+            if contAcc == 20:
                 break
         return pd.DataFrame(e_measures), model
 
