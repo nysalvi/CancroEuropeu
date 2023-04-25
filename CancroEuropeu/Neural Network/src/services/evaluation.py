@@ -5,6 +5,7 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
+from ..utils.model_info import Info
 from array import array
 import pandas as pd
 import numpy as np
@@ -17,7 +18,6 @@ class Evaluation:
 
     def __init__(self) -> None:
         self.h_list_val = []
-        Evaluation.Writer = SummaryWriter(f"./output/{model_name}/lr_{lr}")
         pass
 
     def evaluate_model(self, y_true, y_pred, pos_label=1) -> any:
@@ -67,12 +67,12 @@ class Evaluation:
         h_val['model_name'] = model_name
         self.h_list_val.append(h_val)
 
-        Evaluation.Writer.add_scalar("Test/Loss", h_val['loss'])
-        Evaluation.Writer.add_scalar("Test/Accuracy", h_val['acc'])
-        Evaluation.Writer.add_scalar("Test/F1", h_val['f1'])
-        Evaluation.Writer.add_scalar("Test/Precision", h_val['prec'])
-        Evaluation.Writer.add_scalar("Test/Recall", h_val['recall'])
-        Evaluation.Writer.flush()
+        Info.Writer.add_scalar(f"{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Test/Loss", h_val['loss'])
+        Info.Writer.add_scalar(f"{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Test/Accuracy", h_val['acc'])
+        Info.Writer.add_scalar(f"{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Test/F1", h_val['f1'])
+        Info.Writer.add_scalar(f"{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Test/Precision", h_val['prec'])
+        Info.Writer.add_scalar(f"{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Test/Recall", h_val['recall'])
+        Info.Writer.flush()
 
         h_list_df = pd.DataFrame(output_stacked)
         os.makedirs('output/result/output_data', exist_ok=True)
@@ -82,8 +82,7 @@ class Evaluation:
     def show_result(self):
         h_list_df = pd.DataFrame(self.h_list_val)
         os.makedirs('output/result', exist_ok=True)
-        h_list_df.to_csv('output/result/result.csv', index=False, sep=';', decimal=",")
-        h_list_df
+        h_list_df.to_csv('output/result/result.csv', index=False, sep=';', decimal=",")        
 
     def calculate_softmax(self, output1, output2) -> tuple[float, float]:
         class_0 = math.exp(output1) / (math.exp(output1) + math.exp(output2))
