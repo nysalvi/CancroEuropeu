@@ -1,15 +1,16 @@
-import numpy as np
-import pandas as pd
-import torch
-import os
-import math
-from array import array
-from sklearn.metrics import accuracy_score
+from torch.utils.tensorboard import SummaryWriter
+from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_score
+from sklearn.metrics import accuracy_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
-from torch.utils.tensorboard import SummaryWriter
+from array import array
+import pandas as pd
+import numpy as np
+import torch
+import math
+import os
 
 class Evaluation:
     h_list_val: array
@@ -25,7 +26,8 @@ class Evaluation:
             'confusion_matrix': confusion_matrix(y_true, y_pred),
             'prec': precision_score(y_true, y_pred, pos_label=pos_label),
             'recall': recall_score(y_true, y_pred, pos_label=pos_label),
-            'f1': f1_score(y_true, y_pred, pos_label=pos_label)
+            'f1': f1_score(y_true, y_pred, pos_label=pos_label),
+            'loss': mean_absolute_error(y_true, y_pred)
         }
 
     def predict(self, model, loader, device: str) -> any:
