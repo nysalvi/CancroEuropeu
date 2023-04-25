@@ -1,4 +1,7 @@
+from torch.utils.tensorboard import SummaryWriter
+
 class Info():
+    Writer = SummaryWriter()
     Model = ''
     Optim = ''
     WeightDecay = 0
