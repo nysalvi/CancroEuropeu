@@ -7,7 +7,8 @@ from ..model.device_data import DeviceData
 from ..model.model_fit_data import ModelFitData
 
 class NeuralNetworkModels:
-    def __init__(self, optimization_function:any=optim.SGD, lr:float=0.001, momentum:float=0.9):
+    def __init__(self, optimization_function:torch.optim.Optimizer=optim.SGD, 
+                 lr:float=0.001, momentum:float=0.9):
         self.lr = lr
         self.momentum = momentum
         self.optim = optimization_function
