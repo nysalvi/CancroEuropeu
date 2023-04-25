@@ -61,11 +61,11 @@ class Training:
                 max_val_acc = measures_on_dev['acc'].round(4)
                 torch.save(model.state_dict(), f'output/{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/lr_{Info.LR}/momentum_{Info.Momentum}/state_dict.pt')
 
-            Training.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Train/Loss", train_loss, e)
-            Training.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Train/Accuracy", measures['train_acc'], e)
-            Training.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Validation/Loss", measures['dev_loss'], e)
-            Training.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Validation/Accuracy", measures['dev_acc'], e)
-            Training.Writer.flush()
+            Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Train/Loss", train_loss, e)
+            Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Train/Accuracy", measures['train_acc'], e)
+            Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Validation/Loss", measures['dev_loss'], e)
+            Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Validation/Accuracy", measures['dev_acc'], e)
+            Info.Writer.flush()
 
             pbar.set_postfix(measures)     
             e_measures += [measures]
@@ -90,4 +90,4 @@ class Training:
             img = images[i].permute(1, 2, 0).squeeze()    
             fig.add_subplot(rows, columns, i+1, title = 'Classe %i - %i - %s' % (labels[i], y_pred[i], label_desc[ y_pred[i] ] ) )
             plt.imshow(img)         
-        fig.savefig(f"{Training.Writer.log_dir}/verified_image.png")
+        fig.savefig(f"{Info.Writer.log_dir}/verified_image.png")
