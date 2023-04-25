@@ -1,5 +1,5 @@
 from sklearn.metrics import roc_auc_score, roc_curve, auc
-from torch.utils.tensorboard import SummaryWriter
+from ..utils.model_info import Info
 from tqdm.auto import tqdm
 import numpy as np
 import torch
@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import os
 from torch import nn
 
-class Training:
+class Training:   
     def train_epoch(self, model, trainLoader, optimizer, criterion, device: str):
         model.train()
         losses = []
@@ -44,9 +44,8 @@ class Training:
         measures = {'loss' : np.mean(losses), 'acc' : correct/total}
         return measures
 
-    def train_and_evaluate(self, model, model_name, num_epochs, train_loader, dev_loader, optimizer, criterion, device: str):
-        lr = optimizer.param_groups[0]['lr']
-        Training.Writer = SummaryWriter(f"./output/{model_name}/lr_{lr}")
+    def train_and_evaluate(self, model, num_epochs, train_loader, dev_loader, optimizer, criterion, device: str):
+        #lr = optimizer.param_groups[0]['lr']        
         max_val_acc = 0
         contAcc = 0
         e_measures = []
@@ -60,12 +59,12 @@ class Training:
             if (max_val_acc < measures_on_dev['acc'].round(4)):
                 contAcc = -1
                 max_val_acc = measures_on_dev['acc'].round(4)
-                torch.save(model.state_dict(), f'{Training.Writer.log_dir}/ACC_dict.pt')
+                torch.save(model.state_dict(), f'output/{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/lr_{Info.LR}/momentum_{Info.Momentum}/state_dict.pt')
 
-            Training.Writer.add_scalar("Train/Loss", train_loss, e)
-            Training.Writer.add_scalar("Train/Accuracy", measures['train_acc'], e)
-            Training.Writer.add_scalar("Validation/Loss", measures['dev_loss'], e)
-            Training.Writer.add_scalar("Validation/Accuracy", measures['dev_acc'], e)
+            Training.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Train/Loss", train_loss, e)
+            Training.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Train/Accuracy", measures['train_acc'], e)
+            Training.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Validation/Loss", measures['dev_loss'], e)
+            Training.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Validation/Accuracy", measures['dev_acc'], e)
             Training.Writer.flush()
 
             pbar.set_postfix(measures)     
@@ -76,8 +75,7 @@ class Training:
                 break
         return pd.DataFrame(e_measures), model
 
-    def verify_images(self, test_loader, batch_size, model_ft, device: str, label_desc, model_name):
-        Training.Writer = SummaryWriter(f"./output/{model_name}/lr_{lr}")
+    def verify_images(self, test_loader, batch_size, model_ft, device: str, label_desc):
         test_iter = iter(test_loader)
         images, labels = next(test_iter)
 
@@ -93,6 +91,3 @@ class Training:
             fig.add_subplot(rows, columns, i+1, title = 'Classe %i - %i - %s' % (labels[i], y_pred[i], label_desc[ y_pred[i] ] ) )
             plt.imshow(img)         
         fig.savefig(f"{Training.Writer.log_dir}/verified_image.png")
-
-    def exportModel(self, model_ft, model_name, lr):
-        torch.save(model_ft, f"./output/{model_name}/{lr}/{model_name}.pth")
