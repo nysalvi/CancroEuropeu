@@ -13,11 +13,8 @@ import torch
 import math
 import os
 
-class Evaluation:
-    h_list_val: array
-
-    def __init__(self) -> None:
-        self.h_list_val = []
+class Evaluation:    
+    def __init__(self) -> None:        
         pass
 
     def evaluate_model(self, y_true, y_pred, pos_label=1) -> any:
@@ -51,8 +48,8 @@ class Evaluation:
             for y_ in y_pred_.cpu():
                 y_pred.append(y_)
             for y_ in output:
-                outputs_0.append(y_.detach().numpy()[0])
-                outputs_1.append(y_.detach().numpy()[1])
+                outputs_0.append(y_.detach().cpu().numpy()[0])
+                outputs_1.append(y_.detach().cpu().numpy()[1])
                 softmax_0, softmax_1 = self.calculate_softmax(y_.detach().numpy()[0], y_.detach().numpy()[1])
                 class_0.append(softmax_0)
                 class_1.append(softmax_1)
@@ -75,14 +72,15 @@ class Evaluation:
         Info.Writer.flush()
 
         h_list_df = pd.DataFrame(output_stacked)
-        os.makedirs('output/result/output_data', exist_ok=True)
-        h_list_df.to_csv(f'output/result/output_data/{model_name}.csv', index=False, sep=';',
-                         header=["outputs_0", "outputs_1", "true_values", "class_0", "class_1"], decimal=",")
+        #{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/
+        h_list_df.to_csv(f'D:/output/{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/result.csv', 
+            index=False, sep=';', header=["outputs_0", "outputs_1", "true_values", "class_0", "class_1"], decimal=",")
+        self.show_result(h_val)
 
-    def show_result(self):
-        h_list_df = pd.DataFrame(self.h_list_val)
-        os.makedirs('output/result', exist_ok=True)
-        h_list_df.to_csv('output/result/result.csv', index=False, sep=';', decimal=",")        
+    def show_result(self, h_val):
+        h_list_df = pd.DataFrame(h_val)
+        os.makedirs('D:output/result', exist_ok=True)
+        h_list_df.to_csv(f'D:output/result/{Info.Name}_sav.{Info.SaveType}_lr.{Info.LR}_momen.{Info.Momentum}.csv', mode='a', header=0, index=False, sep=';', decimal=",")        
 
     def calculate_softmax(self, output1, output2) -> tuple[float, float]:
         class_0 = math.exp(output1) / (math.exp(output1) + math.exp(output2))
