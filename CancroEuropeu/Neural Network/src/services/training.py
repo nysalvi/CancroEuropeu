@@ -10,11 +10,11 @@ import os
 from torch import nn
 
 class Training:   
-    def train_epoch(self, model, trainLoader, optimizer, criterion, device: str):
+    def train_epoch(self, model, trainLoader, optimizer, criterion):
         model.train()
         losses = []
         for X, y in trainLoader:    
-            X, y = X.to(device), y.to(device)            
+            X, y = X.to(Info.Device), y.to(Info.Device)            
             optimizer.zero_grad()
             # (1) Passar os dados pela rede neural (forward)
             output = model(X)                              
@@ -28,14 +28,14 @@ class Training:
         model.eval()
         return np.mean(losses)
 
-    def eval_model(self, model, loader, criterion, device: str):
+    def eval_model(self, model, loader, criterion):
         measures = []
         total = 0
         correct = 0
         losses = []
         with torch.no_grad():
             for X, y in loader:                
-                X, y = X.to(device), y.to(device)             
+                X, y = X.to(Info.Device), y.to(Info.Device)             
                 output = model(X)                      
                 _, y_pred = torch.max(output, 1)
                 total += len(y)
@@ -45,15 +45,15 @@ class Training:
         measures = {'loss' : np.mean(losses), 'acc' : correct/total}
         return measures
 
-    def train_and_evaluate(self, model, num_epochs, train_loader, dev_loader, optimizer, criterion, device: str):                
+    def train_and_evaluate(self, model, num_epochs, train_loader, dev_loader, optimizer, criterion):                
         max_val_acc = 0
         contAcc = 0
         e_measures = []
         pbar = tqdm(range(1,num_epochs+1))
         for e in pbar:
-            train_loss = self.train_epoch(model, train_loader, optimizer, criterion, device)
-            measures_on_train = self.eval_model(model, train_loader, criterion, device)
-            measures_on_dev = self.eval_model(model, dev_loader, criterion, device)
+            train_loss = self.train_epoch(model, train_loader, optimizer, criterion, Info.Device)
+            measures_on_train = self.eval_model(model, train_loader, criterion, Info.Device)
+            measures_on_dev = self.eval_model(model, dev_loader, criterion, Info.Device)
             measures = {'epoch': e, 'train_loss': train_loss, 'train_acc' : measures_on_train['acc'].round(4), 
                 'dev_loss' : measures_on_dev['loss'], 'dev_acc' : measures_on_dev['acc'].round(4) }
             if (max_val_acc < measures_on_dev['acc'].round(4)):
@@ -82,7 +82,7 @@ class Training:
         rows = 2
         columns = math.ceil(batch_size / rows)
 
-        output = model_ft(images.to(device))
+        output = model_ft(images.to(Info.Device))
         _, y_pred = torch.max(output, 1)
         y_pred = y_pred.cpu().data.numpy()
         for i in range(0, columns*rows):    
