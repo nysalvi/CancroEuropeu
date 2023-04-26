@@ -64,16 +64,16 @@ class Evaluation:
         h_val['model_name'] = model_name
         self.h_list_val.append(h_val)
 
-        Info.Writer.add_scalar(f"{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Test/Loss", h_val['loss'])
-        Info.Writer.add_scalar(f"{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Test/Accuracy", h_val['acc'])
-        Info.Writer.add_scalar(f"{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Test/F1", h_val['f1'])
-        Info.Writer.add_scalar(f"{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Test/Precision", h_val['prec'])
-        Info.Writer.add_scalar(f"{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Test/Recall", h_val['recall'])
+        Info.Writer.add_scalar(f"{Info.BoardX}/Test/Loss", h_val['loss'])
+        Info.Writer.add_scalar(f"{Info.BoardX}/Test/Accuracy", h_val['acc'])
+        Info.Writer.add_scalar(f"{Info.BoardX}/Test/F1", h_val['f1'])
+        Info.Writer.add_scalar(f"{Info.BoardX}/Test/Precision", h_val['prec'])
+        Info.Writer.add_scalar(f"{Info.BoardX}/Test/Recall", h_val['recall'])
         Info.Writer.flush()
 
         h_list_df = pd.DataFrame(output_stacked)
         #{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/
-        h_list_df.to_csv(f'D:/output/{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/result.csv', 
+        h_list_df.to_csv(f'{Info.PATH}/result.csv', 
             index=False, sep=';', header=["outputs_0", "outputs_1", "true_values", "class_0", "class_1"], decimal=",")
         self.show_result(h_val)
 

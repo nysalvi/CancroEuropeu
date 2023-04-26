@@ -45,11 +45,11 @@ class Training:
         measures = {'loss' : np.mean(losses), 'acc' : correct/total}
         return measures
 
-    def train_and_evaluate(self, model, num_epochs, train_loader, dev_loader, optimizer, criterion):                
+    def train_and_evaluate(self, model, train_loader, dev_loader, optimizer, criterion):                
         max_val_acc = 0
         contAcc = 0
         e_measures = []
-        pbar = tqdm(range(1,num_epochs+1))
+        pbar = tqdm(range(1,Info.Epoch+1))
         for e in pbar:
             train_loss = self.train_epoch(model, train_loader, optimizer, criterion, Info.Device)
             measures_on_train = self.eval_model(model, train_loader, criterion, Info.Device)
@@ -59,12 +59,12 @@ class Training:
             if (max_val_acc < measures_on_dev['acc'].round(4)):
                 contAcc = -1
                 max_val_acc = measures_on_dev['acc'].round(4)
-                torch.save(model.state_dict(), f'D:/output/{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/lr_{Info.LR}/momentum_{Info.Momentum}/state_dict.pt')
+                torch.save(model.state_dict(), f'{Info.PATH}/state_dict.pt')
 
-            Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Train/Loss", train_loss, e)
-            Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Train/Accuracy", measures['train_acc'], e)
-            Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Validation/Loss", measures['dev_loss'], e)
-            Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Validation/Accuracy", measures['dev_acc'], e)
+            Info.Writer.add_scalar(f"{Info.BoardX}/Train/Loss", train_loss, e)
+            Info.Writer.add_scalar(f"{Info.BoardX}/Train/Accuracy", measures['train_acc'], e)
+            Info.Writer.add_scalar(f"{Info.BoardX}/Validation/Loss", measures['dev_loss'], e)
+            Info.Writer.add_scalar(f"{Info.BoardX}/Validation/Accuracy", measures['dev_acc'], e)
             Info.Writer.flush()
 
             contAcc+= 1
@@ -74,19 +74,18 @@ class Training:
             e_measures += [measures]
         return pd.DataFrame(e_measures), model
 
-    def verify_images(self, test_loader, batch_size, model_ft, device: str, label_desc):
+    def verify_images(self, test_loader, batch_size, model_ft, label_desc):
         test_iter = iter(test_loader)
         images, labels = next(test_iter)
 
         fig = plt.figure(figsize=(24, 7))
         rows = 2
         columns = math.ceil(batch_size / rows)
-
         output = model_ft(images.to(Info.Device))
         _, y_pred = torch.max(output, 1)
         y_pred = y_pred.cpu().data.numpy()
         for i in range(0, columns*rows):    
             img = images[i].permute(1, 2, 0).squeeze()    
             fig.add_subplot(rows, columns, i+1, title = 'Classe %i - %i - %s' % (labels[i], y_pred[i], label_desc[ y_pred[i] ] ) )
-            plt.imshow(img)         
-        fig.savefig(f"D:/output/images/{Info.Name}_sav.{Info.SaveType}_lr.{Info.LR}_momen.{Info.Momentum}.png")
+            plt.imshow(img)                     
+        fig.savefig(f"{Info.PATH}/image.png")
