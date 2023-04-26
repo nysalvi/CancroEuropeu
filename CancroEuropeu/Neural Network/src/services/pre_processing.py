@@ -1,5 +1,20 @@
 from torchvision import datasets, transforms
 from ..model.neural_data import NeuralData
+import os
+
+def find_classes(self, directory: str) -> tuple[list[str], dict[str, int]]:
+    labels = []        
+    idx_label = {}
+    for root, dirs, files in os.walk(directory):
+        if dirs == []:            
+            str_split = root.split('\\')[-1]
+            pair = str_split.split(' - ') if len(str_split.split(' - ')) == 2 else False
+            if pair:
+                num, label = pair     
+                if not label in labels:
+                    labels.append(label)            
+                idx_label.update({label : int(num)})
+    return (labels, idx_label)
 
 class PreProcessing:
     input_size: any
@@ -31,6 +46,7 @@ class PreProcessing:
                 #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ])
         }
+        datasets.ImageFolder.find_classes = find_classes
 
         train_images=datasets.ImageFolder(self.dataPath + '/train', transform=data_transforms['train'])
         dev_images=datasets.ImageFolder(self.dataPath + '/dev', transform=data_transforms['dev'])
