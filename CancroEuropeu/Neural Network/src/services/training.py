@@ -59,7 +59,7 @@ class Training:
             if (max_val_acc < measures_on_dev['acc'].round(4)):
                 contAcc = -1
                 max_val_acc = measures_on_dev['acc'].round(4)
-                torch.save(model.state_dict(), f'output/{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/lr_{Info.LR}/momentum_{Info.Momentum}/state_dict.pt')
+                torch.save(model.state_dict(), f'D:/output/{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/lr_{Info.LR}/momentum_{Info.Momentum}/state_dict.pt')
 
             Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Train/Loss", train_loss, e)
             Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Train/Accuracy", measures['train_acc'], e)
@@ -67,12 +67,11 @@ class Training:
             Info.Writer.add_scalar(f"{Info.Name}/SavedWith_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/Validation/Accuracy", measures['dev_acc'], e)
             Info.Writer.flush()
 
-            pbar.set_postfix(measures)     
-            e_measures += [measures]
-
             contAcc+= 1
             if contAcc == 20:
                 break
+            pbar.set_postfix(measures)     
+            e_measures += [measures]
         return pd.DataFrame(e_measures), model
 
     def verify_images(self, test_loader, batch_size, model_ft, device: str, label_desc):
@@ -90,4 +89,4 @@ class Training:
             img = images[i].permute(1, 2, 0).squeeze()    
             fig.add_subplot(rows, columns, i+1, title = 'Classe %i - %i - %s' % (labels[i], y_pred[i], label_desc[ y_pred[i] ] ) )
             plt.imshow(img)         
-        fig.savefig(f"{Info.Writer.log_dir}/verified_image.png")
+        fig.savefig(f"D:/output/images/{Info.Name}_sav.{Info.SaveType}_lr.{Info.LR}_momen.{Info.Momentum}.png")
