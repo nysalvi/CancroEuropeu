@@ -22,10 +22,14 @@ class Analysis:
             report = precision_recall_fscore_support(y, y_pred)
             report_b05 = precision_recall_fscore_support(y, y_pred, beta=0.5)
             report_b2 = precision_recall_fscore_support(y, y_pred, beta=2)
-            results.append({
+            results.append({                                                                                                
                 "threshold": t,
                 "precision_0": report[0][0],
+                "precision_0_05": report_b05[0][0],
+                "precision_0_2": report_b2[0][0],
                 "recall_0": report[1][0],
+                "recall_0_05": report_b05[1][0],
+                "recall_0_2": report_b2[1][0],
                 "fscore_0": report[2][0],
                 "fscore_0_05": report_b05[2][0],
                 "fscore_0_2": report_b2[2][0]
