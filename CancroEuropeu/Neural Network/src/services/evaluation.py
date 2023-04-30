@@ -5,16 +5,19 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
-from ..utils.model_info import Info
+from ..utils.global_info import Info
 from array import array
 import pandas as pd
 import numpy as np
 import torch
 import math
+import csv
 import os
 
 class Evaluation:    
+    h_list_val: array
     def __init__(self) -> None:        
+        self.h_list_val = []
         pass
 
     def evaluate_model(self, y_true, y_pred, pos_label=1) -> any:
@@ -27,7 +30,7 @@ class Evaluation:
             'loss': mean_absolute_error(y_true, y_pred)
         }
 
-    def predict(self, model, loader, device: str) -> any:
+    def predict(self, model, loader) -> any:
         y_true = []
         y_pred = []
         outputs_0 = []
@@ -37,7 +40,7 @@ class Evaluation:
         class_1 = []
 
         for X, y in loader:
-            X, y = X.to(device), y.to(device)
+            X, y = X.to(Info.Device), y.to(Info.Device)
 
             output = model(X)
 
@@ -50,7 +53,7 @@ class Evaluation:
             for y_ in output:
                 outputs_0.append(y_.detach().cpu().numpy()[0])
                 outputs_1.append(y_.detach().cpu().numpy()[1])
-                softmax_0, softmax_1 = self.calculate_softmax(y_.detach().numpy()[0], y_.detach().numpy()[1])
+                softmax_0, softmax_1 = self.calculate_softmax(y_.detach().cpu().numpy()[0], y_.detach().cpu().numpy()[1])
                 class_0.append(softmax_0)
                 class_1.append(softmax_1)
 
@@ -58,11 +61,22 @@ class Evaluation:
 
         return y_true, y_pred, output_stacked
 
-    def calculate_result(self, model_ft, test_loader, model_name, device: str):
-        y_true, y_pred, output_stacked = self.predict(model_ft, test_loader, device)
+    def calculate_result(self, model_ft, test_loader):
+        y_true, y_pred, output_stacked = self.predict(model_ft, test_loader)
+        h_list_df = pd.DataFrame(output_stacked)        
+        h_list_df.to_csv(f'{Info.PATH}/{Info.Name}_{Info.Optim}.csv', 
+            index=False, sep=';', header=["outputs_0", "outputs_1", "true_values", "class_0", "class_1"], decimal=",")
+
         h_val = self.evaluate_model(y_true, y_pred)
-        h_val['model_name'] = model_name
-        self.h_list_val.append(h_val)
+        h_val['model_name'] = Info.Name
+        h_val['LR'] = Info.LR
+        h_val['momen'] = Info.Momentum
+        h_val['epochs'] = Info.Epoch
+        #h_val['metric'] = Info.SaveType 
+        #h_val['LR'] = Info.WeightDecay
+        #h_val['lr_decay'] = Info.LR_Decay                
+        self.h_list_val.append(h_val)        
+        self.append_results()
 
         Info.Writer.add_scalar(f"{Info.BoardX}/Test/Loss", h_val['loss'])
         Info.Writer.add_scalar(f"{Info.BoardX}/Test/Accuracy", h_val['acc'])
@@ -71,18 +85,20 @@ class Evaluation:
         Info.Writer.add_scalar(f"{Info.BoardX}/Test/Recall", h_val['recall'])
         Info.Writer.flush()
 
-        h_list_df = pd.DataFrame(output_stacked)
-        #{Info.Name}/SaveType_{Info.SaveType}/{Info.Optim}/LR_{Info.LR}/Momentum_{Info.Momentum}/
-        h_list_df.to_csv(f'{Info.PATH}/result.csv', 
-            index=False, sep=';', header=["outputs_0", "outputs_1", "true_values", "class_0", "class_1"], decimal=",")
-        self.show_result(h_val)
-
-    def show_result(self, h_val):
-        h_list_df = pd.DataFrame(h_val)
-        os.makedirs('D:output/result', exist_ok=True)
-        h_list_df.to_csv(f'D:output/result/{Info.Name}_sav.{Info.SaveType}_lr.{Info.LR}_momen.{Info.Momentum}.csv', mode='a', header=0, index=False, sep=';', decimal=",")        
+    def append_results(self):
+        h_list_df = pd.DataFrame(self.h_list_val)        
+        exists = not os.path.exists('./output/results/all_results.csv')        
+        h_list_df.to_csv('D:output/results/all_results.csv', mode='a', header=exists, index=False, sep=';', decimal=",")        
 
     def calculate_softmax(self, output1, output2) -> tuple[float, float]:
         class_0 = math.exp(output1) / (math.exp(output1) + math.exp(output2))
         class_1 = math.exp(output2) / (math.exp(output1) + math.exp(output2))
         return class_0, class_1
+
+    @staticmethod
+    def best_results():                
+        df = pd.read_csv('./output/results/all_results.csv', mode='r', sep=';', decimal=',')
+        idx = df.groupby('model_name')['acc'].idxmax()
+        best_df = df.iloc[idx]
+        best_df.to_csv('./output/results/best_results.csv', index=False, header=True, sep=';', decimal=",")
+        
