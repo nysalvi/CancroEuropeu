@@ -1,5 +1,6 @@
 from torchvision import datasets, transforms
 from ..model.neural_data import NeuralData
+from ..utils.make_dataset import make_dataset
 import os
 
 def find_classes(self, directory: str) -> tuple[list[str], dict[str, int]]:
@@ -47,6 +48,7 @@ class PreProcessing:
             ])
         }
         datasets.ImageFolder.find_classes = find_classes
+        datasets.ImageFolder.make_dataset = make_dataset
 
         train_images=datasets.ImageFolder(self.dataPath + '/train', transform=data_transforms['train'])
         dev_images=datasets.ImageFolder(self.dataPath + '/dev', transform=data_transforms['dev'])
