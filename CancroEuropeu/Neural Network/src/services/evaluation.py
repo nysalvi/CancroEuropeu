@@ -63,7 +63,7 @@ class Evaluation:
 
     def calculate_result(self, model_ft, test_loader):
         y_true, y_pred, output_stacked = self.predict(model_ft, test_loader)
-        h_list_df = pd.DataFrame(output_stacked)        
+        h_list_df = pd.DataFrame(output_stacked)                
         h_list_df.to_csv(f'{Info.PATH}/{Info.Name}_{Info.Optim}.csv', 
             index=False, sep=';', header=["outputs_0", "outputs_1", "true_values", "class_0", "class_1"], decimal=",")
 
@@ -86,8 +86,9 @@ class Evaluation:
         Info.Writer.flush()
 
     def append_results(self):
-        h_list_df = pd.DataFrame(self.h_list_val)        
-        exists = not os.path.exists('./output/results/all_results.csv')        
+        h_list_df = pd.DataFrame(self.h_list_val)      
+        os.makedirs('D:output/results', exist_ok=True)
+        exists = not os.path.exists('D:output/results/all_results.csv')        
         h_list_df.to_csv('D:output/results/all_results.csv', mode='a', header=exists, index=False, sep=';', decimal=",")        
 
     def calculate_softmax(self, output1, output2) -> tuple[float, float]:
@@ -97,8 +98,8 @@ class Evaluation:
 
     @staticmethod
     def best_results():                
-        df = pd.read_csv('./output/results/all_results.csv', mode='r', sep=';', decimal=',')
+        df = pd.read_csv('D:output/results/all_results.csv', mode='r', sep=';', decimal=',')
         idx = df.groupby('model_name')['acc'].idxmax()
         best_df = df.iloc[idx]
-        best_df.to_csv('./output/results/best_results.csv', index=False, header=True, sep=';', decimal=",")
+        best_df.to_csv('D:output/results/best_results.csv', index=False, header=True, sep=';', decimal=",")
         

@@ -5,19 +5,18 @@ from ..model.enums.model_name_enum import ModelName
 from ..model.neural_loader import NeuralLoader
 from ..model.device_data import DeviceData
 from ..model.model_fit_data import ModelFitData
+from ..utils.global_info import Info
 
 class NeuralNetworkModels:
-    def __init__(self, optimization_function:torch.optim.Optimizer=optim.SGD, 
-                 lr:float=0.001, momentum:float=0.9):
-        self.lr = lr
-        self.momentum = momentum
-        self.optim = optimization_function
+    def __init__(self):
+        pass
+
     def set_parameter_requires_grad(self, model, feature_extracting):
         if feature_extracting:
             for param in model.parameters():
                 param.requires_grad = False
     
-    def initialize_model(self, model_name: ModelName, num_classes, feature_extract, use_pretrained=True):
+    def initialize_model(self, model_name: ModelName, num_classes:int, feature_extract:bool, use_pretrained:bool=True):
         model_ft = None
         input_size = 0
 
@@ -101,11 +100,11 @@ class NeuralNetworkModels:
         else:
             print("Invalid model name, exiting...")
             exit()
-
+        
         return model_ft, input_size
-
-    def optimize_model(self, device:str, feature_extract, model_ft) -> ModelFitData:
-        model_ft = model_ft.to(device)
+    def optimize_model(self, feature_extract, model_ft, optim:optim.Optimizer=optim.SGD, 
+                    lr:float=0.001, momentum:float=0.9) -> ModelFitData:
+        model_ft = model_ft.to(Info.Device)
 
         params_to_update = model_ft.parameters()
         print("Params to learn:")
@@ -118,9 +117,8 @@ class NeuralNetworkModels:
         else:
             for name,param in model_ft.named_parameters():
                 if param.requires_grad == True:
-                    print("\t",name)
-        
-        optimizer_ft = self.optim(params_to_update, lr=self.lr, momentum=self.momentum)
+                    print("\t",name)        
+        optimizer_ft = optim(params_to_update, lr=lr, momentum=momentum)
         return ModelFitData(optimizer_ft, model_ft)
 
     def verify_predict_before_training(self, deviceData: DeviceData, neuralLoader: NeuralLoader, modelFitData: ModelFitData):

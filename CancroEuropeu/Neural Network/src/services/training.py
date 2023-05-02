@@ -1,5 +1,5 @@
 from sklearn.metrics import roc_auc_score, roc_curve, auc
-from ..utils.model_info import Info
+from ..utils.global_info import Info
 from tqdm.auto import tqdm
 import numpy as np
 import torch
@@ -45,22 +45,22 @@ class Training:
         measures = {'loss' : np.mean(losses), 'acc' : correct/total}
         return measures
 
-    def train_and_evaluate(self, model, train_loader, dev_loader, optimizer, criterion):                
+    def train_and_evaluate(self, model, num_epochs, train_loader, dev_loader, optimizer, criterion):                
         max_val_acc = 0
         contAcc = 0
         e_measures = []
-        pbar = tqdm(range(1,Info.Epoch+1))
+        pbar = tqdm(range(1,num_epochs+1))
         for e in pbar:
-            train_loss = self.train_epoch(model, train_loader, optimizer, criterion, Info.Device)
-            measures_on_train = self.eval_model(model, train_loader, criterion, Info.Device)
-            measures_on_dev = self.eval_model(model, dev_loader, criterion, Info.Device)
+            train_loss = self.train_epoch(model, train_loader, optimizer, criterion)
+            measures_on_train = self.eval_model(model, train_loader, criterion)
+            measures_on_dev = self.eval_model(model, dev_loader, criterion)
             measures = {'epoch': e, 'train_loss': train_loss, 'train_acc' : measures_on_train['acc'].round(4), 
                 'dev_loss' : measures_on_dev['loss'], 'dev_acc' : measures_on_dev['acc'].round(4) }
             if (max_val_acc < measures_on_dev['acc'].round(4)):
                 contAcc = -1
                 max_val_acc = measures_on_dev['acc'].round(4)
                 torch.save(model.state_dict(), f'{Info.PATH}/state_dict.pt')
-
+            
             Info.Writer.add_scalar(f"{Info.BoardX}/Train/Loss", train_loss, e)
             Info.Writer.add_scalar(f"{Info.BoardX}/Train/Accuracy", measures['train_acc'], e)
             Info.Writer.add_scalar(f"{Info.BoardX}/Validation/Loss", measures['dev_loss'], e)
@@ -87,5 +87,5 @@ class Training:
         for i in range(0, columns*rows):    
             img = images[i].permute(1, 2, 0).squeeze()    
             fig.add_subplot(rows, columns, i+1, title = 'Classe %i - %i - %s' % (labels[i], y_pred[i], label_desc[ y_pred[i] ] ) )
-            plt.imshow(img)                     
+            plt.imshow(img)                
         fig.savefig(f"{Info.PATH}/image.png")

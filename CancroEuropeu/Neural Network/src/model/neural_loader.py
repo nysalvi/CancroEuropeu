@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from model_loader import ModelLoader
+from .model_loader import ModelLoader
 
 @dataclass
 class NeuralLoader:
