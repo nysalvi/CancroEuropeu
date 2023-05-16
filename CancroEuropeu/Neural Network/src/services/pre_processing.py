@@ -1,4 +1,4 @@
-from torchvision import datasets, transforms
+from torchvision import datasets, transforms, models
 from ..model.neural_data import NeuralData
 from ..utils.make_dataset import make_dataset
 import os
@@ -26,7 +26,7 @@ class PreProcessing:
         self.dataPath = dataPath
         pass
 
-    def run(self) -> NeuralData:
+    def run(self) -> NeuralData:       
         data_transforms = {
         'train' : transforms.Compose([
                 transforms.RandomResizedCrop(self.input_size),
@@ -34,19 +34,20 @@ class PreProcessing:
                 transforms.RandomHorizontalFlip(),
                 #transforms.ColorJitter(brightness=0.05, contrast=0.05, hue=0.05),                                            
                 transforms.ToTensor(),
-                #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])                                                    
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])                                                    
                 ]),
-        'dev' : transforms.Compose([
+        'dev' : transforms.Compose([                                    
             transforms.Resize(self.input_size),        
             transforms.ToTensor(),
-            #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])            
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])            
         ]),
         'test'   : transforms.Compose([
                 transforms.Resize(self.input_size),        
                 transforms.ToTensor(),
-                #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ])
         }
+
         datasets.ImageFolder.find_classes = find_classes
         datasets.ImageFolder.make_dataset = make_dataset
 
