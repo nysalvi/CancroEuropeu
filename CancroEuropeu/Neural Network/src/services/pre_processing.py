@@ -28,10 +28,11 @@ class PreProcessing:
 
     def run(self) -> NeuralData:       
         data_transforms = {
-        'train' : transforms.Compose([
+        'train' : transforms.Compose([                
                 transforms.RandomResizedCrop(self.input_size),
-                transforms.Resize(self.input_size),
+                #transforms.Resize(self.input_size),
                 transforms.RandomHorizontalFlip(),
+                transforms.RandomVerticalFlip(),
                 #transforms.ColorJitter(brightness=0.05, contrast=0.05, hue=0.05),                                            
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])                                                    
