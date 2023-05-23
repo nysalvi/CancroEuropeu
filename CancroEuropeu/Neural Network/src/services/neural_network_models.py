@@ -22,92 +22,136 @@ class NeuralNetworkModels:
         if model_name == ModelName.RESNET:
             """ Resnet18
             """
-            model_ft = models.resnet18(pretrained=use_pretrained)
+            model_ft = models.resnet18(pretrained=use_pretrained)                        
             self.set_parameter_requires_grad(model_ft, feature_extract)
 
-            num_ftrs = model_ft.fc.in_features
-            model_ft.fc = nn.Linear(num_ftrs, num_classes)
+            num_ftrs = model_ft.fc.in_features            
+            model_ft.fc = nn.Linear(num_ftrs, num_classes)            
+            #model_ft.fc.add_module('sigmoid', nn.Sigmoid())
             input_size = 224
+            grad_layer = model_ft.layer4[-1]
 
-        elif model_name == ModelName.ALEXNET:
-            """ Alexnet
-            """
-            model_ft = models.alexnet(pretrained=use_pretrained)
-            
-            self.set_parameter_requires_grad(model_ft, feature_extract)
-            num_ftrs = model_ft.classifier[6].in_features
-            model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
-            input_size = 224
+        #elif model_name == ModelName.ALEXNET:
+        #    """ Alexnet
+        #    """
+        #    model_ft = models.alexnet(pretrained=use_pretrained)
+        #    
+        #    self.set_parameter_requires_grad(model_ft, feature_extract)
+        #    num_ftrs = model_ft.classifier[6].in_features
+        #    model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
+        #    input_size = 224
 
         elif model_name == ModelName.VGG16:
             """ VGG16
             """
-            model_ft = models.vgg16(pretrained=use_pretrained)
-            
+            model_ft = models.vgg16_bn(pretrained=use_pretrained)            
             self.set_parameter_requires_grad(model_ft, feature_extract)
             num_ftrs = model_ft.classifier[6].in_features
             model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
+            #model_ft.classifier.add_module('sigmoid', nn.Sigmoid())
             input_size = 224
+            grad_layer = model_ft.features[-1]
+        #elif model_name == ModelName.MOBILENET_V2:
+        #    """ 
+        #    """
+        #    model_ft = models.mobilenet_v2(pretrained=use_pretrained)
+        #    self.set_parameter_requires_grad(model_ft, feature_extract)
+        #    
+        #    num_ftrs = model_ft.classifier[1].in_features
+        #    model_ft.classifier[1] = nn.Linear(num_ftrs,num_classes)
+        #    input_size = 224
 
-        elif model_name == ModelName.MOBILENET_V2:
-            """ 
-            """
-            model_ft = models.mobilenet_v2(pretrained=use_pretrained)
-            self.set_parameter_requires_grad(model_ft, feature_extract)
-            
-            num_ftrs = model_ft.classifier[1].in_features
-            model_ft.classifier[1] = nn.Linear(num_ftrs,num_classes)
-            input_size = 224
+        #elif model_name == ModelName.VGG:
+        #    """ VGG11_bn
+        #    """
+        #    model_ft = models.vgg11_bn(pretrained=use_pretrained)
+        #    
+        #    self.set_parameter_requires_grad(model_ft, feature_extract)
+        #    num_ftrs = model_ft.classifier[6].in_features
+        #    model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
+        #    input_size = 224
 
-        elif model_name == ModelName.VGG:
-            """ VGG11_bn
-            """
-            model_ft = models.vgg11_bn(pretrained=use_pretrained)
-            
-            self.set_parameter_requires_grad(model_ft, feature_extract)
+        #elif model_name == ModelName.MOBILENET_V3_SMALL:
+        #    model_ft = models.mobilenet_v3_small(pretrained=use_pretrained)
+        #    
+        #    self.set_parameter_requires_grad(model_ft, feature_extract)
+        #    num_ftrs = model_ft.classifier[3].in_features
+        #    model_ft.classifier[3] = nn.Linear(num_ftrs,num_classes)
+        #    input_size = 224
+
+        #elif model_name == ModelName.MOBILENET_V3_LARGE:
+        #    model_ft = models.mobilenet_v3_large(pretrained=use_pretrained)
+        #
+        #    self.set_parameter_requires_grad(model_ft, feature_extract)
+        #    num_ftrs = model_ft.classifier[3].in_features
+        #    model_ft.classifier[3] = nn.Linear(num_ftrs,num_classes)
+        #    input_size = 224     
+
+        #elif model_name == ModelName.SQUEEZENET:
+        #    """ Squeezenet
+        #    """
+        #    model_ft = models.squeezenet1_0(pretrained=use_pretrained)
+        #
+        #    self.set_parameter_requires_grad(model_ft, feature_extract)
+        #    model_ft.classifier[1] = nn.Conv2d(512, num_classes, kernel_size=(1,1), stride=(1,1))
+        #    model_ft.num_classes = num_classes
+        #    input_size = 224
+        #    
+        #elif model_name == ModelName.DENSENET:
+        #    """ DenseNet
+        #    """
+        #    model_ft = models.densenet121(pretrained= not use_pretrained)             
+        #    
+        #    print(model_ft)
+        #    print(torch.load('./data/densenet.pth'))
+        #    exit()
+        #    model_ft.load_state_dict(torch.load('./data/densenet.pth'))
+        #    self.set_parameter_requires_grad(model_ft, feature_extract)
+        #    num_ftrs = model_ft.classifier[1].in_features
+        #    model_ft.classifier[1] = nn.Linear(num_ftrs, num_classes)
+        #    #model_ft.classifier.add_module('sigmoid', nn.Sigmoid())
+        #    input_size = 224               
+        #    grad_layer = model_ft.features[-1]
+
+        elif model_name == ModelName.VGG19:
+            """ VGG 19
+            """            
+            model_ft = models.vgg19_bn(pretrained=use_pretrained)                   
             num_ftrs = model_ft.classifier[6].in_features
-            model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
-            input_size = 224
+            self.set_parameter_requires_grad(model_ft, feature_extract)            
+            model_ft.classifier[6] = nn.Linear(num_ftrs, num_classes)
+            #model_ft.classifier.add_module('sigmoid', nn.Sigmoid())
+            input_size = 224                 
+            grad_layer = model_ft.features[-1]
 
-        elif model_name == ModelName.MOBILENET_V3_SMALL:
-            model_ft = models.mobilenet_v3_small(pretrained=use_pretrained)
-            
-            self.set_parameter_requires_grad(model_ft, feature_extract)
-            num_ftrs = model_ft.classifier[3].in_features
-            model_ft.classifier[3] = nn.Linear(num_ftrs,num_classes)
-            input_size = 224
-
-        elif model_name == ModelName.MOBILENET_V3_LARGE:
-            model_ft = models.mobilenet_v3_large(pretrained=use_pretrained)
-
-            self.set_parameter_requires_grad(model_ft, feature_extract)
-            num_ftrs = model_ft.classifier[3].in_features
-            model_ft.classifier[3] = nn.Linear(num_ftrs,num_classes)
-            input_size = 224     
-
-        elif model_name == ModelName.SQUEEZENET:
-            """ Squeezenet
+        elif model_name == ModelName.RESNET50:
+            """ Resnet50
             """
-            model_ft = models.squeezenet1_0(pretrained=use_pretrained)
-
+            model_ft = models.resnet50(pretrained=use_pretrained)               
             self.set_parameter_requires_grad(model_ft, feature_extract)
-            model_ft.classifier[1] = nn.Conv2d(512, num_classes, kernel_size=(1,1), stride=(1,1))
-            model_ft.num_classes = num_classes
-            input_size = 224
+            num_ftrs = model_ft.fc.in_features
+            model_ft.fc = nn.Linear(num_ftrs, num_classes)
+            #model_ft.fc.add_module('sigmoid', nn.Sigmoid())
+            input_size = 224      
+            grad_layer = model_ft.layer4[-1]
 
-        elif model_name == ModelName.DENSENET:
-            """ Densenet
+        elif model_name == ModelName.INCEPTIONV3:
+            """ InceptionV3
             """
-            model_ft = models.densenet121(pretrained=use_pretrained)            
+            model_ft = models.inception.inception_v3(pretrained=use_pretrained)      
+            print(model_ft)
             self.set_parameter_requires_grad(model_ft, feature_extract)
-            num_ftrs = model_ft.classifier.in_features
-            model_ft.classifier = nn.Linear(num_ftrs, num_classes)
-            input_size = 224                                                                                                         
+            num_ftrs = model_ft.fc.in_features            
+            model_ft.fc = nn.Linear(num_ftrs, num_classes)
+            #model_ft.fc.add_module('sigmoid', nn.Sigmoid())
+            input_size = 299          
+            grad_layer = model_ft.Mixed_7c.branch_pool
         else:
             print("Invalid model name, exiting...")
             exit()
         
-        return model_ft, input_size
+        return model_ft, input_size, grad_layer
+
     def optimize_model(self, feature_extract, model_ft, optim:optim.Optimizer=optim.SGD, 
                     lr:float=0.001, momentum:float=0.9) -> ModelFitData:
         model_ft = model_ft.to(Info.Device)
@@ -123,8 +167,8 @@ class NeuralNetworkModels:
         else:
             for name,param in model_ft.named_parameters():
                 if param.requires_grad == True:
-                    print("\t",name)        
-        optimizer_ft = optim(params_to_update, lr=lr, momentum=momentum)
+                    print("\t",name)               
+        optimizer_ft = optim(params_to_update, lr=lr, momentum=momentum, weight_decay=Info.WeightDecay)
         return ModelFitData(optimizer_ft, model_ft)
 
     def verify_predict_before_training(self, deviceData: DeviceData, neuralLoader: NeuralLoader, modelFitData: ModelFitData):
