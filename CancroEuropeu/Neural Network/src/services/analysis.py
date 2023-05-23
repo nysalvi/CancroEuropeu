@@ -10,7 +10,7 @@ class Analysis:
     def run() -> any:
         df = pd.read_csv(f'{Info.PATH}/result.csv', sep=";", decimal=",")
         y = df.true_values.values
-        scores = -df.outputs_1.values
+        scores = df.scores.values
         precision, recall, thresholds = metrics.precision_recall_curve(y, scores, pos_label=0)
         display = metrics.PrecisionRecallDisplay(precision=precision, recall=recall)
         display.plot()                
