@@ -7,9 +7,9 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score, fbeta_score
 from ..utils.global_info import Info
 from array import array
+from torch import nn
 import pandas as pd
 import numpy as np
-import torch
 import math
 import csv
 import os
@@ -39,10 +39,10 @@ class Evaluation:
 
         for X, y in loader:
             X, y = X.to(Info.Device), y.to(Info.Device)
-            score = model(X).squeeze()                                    
+            score = nn.Sigmoid()(model(X)).squeeze()                  
             scores+= score.tolist()
 
-            outputs = (score>=0.5).float()
+            outputs = (score>=0.5).float()                        
             y_pred += outputs.tolist()
             y_true += y.tolist()        
         stack = np.stack((y_pred, y_true, scores), axis=1)
@@ -50,8 +50,7 @@ class Evaluation:
 
     def calculate_result(self, model_ft, test_loader, epochs):
         y_true, y_pred, stack = self.predict(model_ft, test_loader)
-        h_list_df = pd.DataFrame(stack)       
-        print(h_list_df)
+        h_list_df = pd.DataFrame(stack)               
         h_list_df.to_csv(f'{Info.PATH}/result.csv', 
             index=False, sep=';', header=["outputs", "true_values", "scores"], decimal=",")
 
