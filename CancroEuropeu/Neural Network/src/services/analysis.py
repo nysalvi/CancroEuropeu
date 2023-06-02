@@ -1,4 +1,4 @@
-from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 from ..utils.global_info import Info
 from sklearn import metrics
 import pandas as pd
@@ -11,6 +11,7 @@ class Analysis:
         df = pd.read_csv(f'{Info.PATH}/result.csv', sep=";", decimal=",")
         y = df.true_values.values
         scores = df.scores.values
+        
         precision, recall, thresholds = metrics.precision_recall_curve(y, scores, pos_label=0)
         display = metrics.PrecisionRecallDisplay(precision=precision, recall=recall)
         display.plot()                
@@ -20,12 +21,14 @@ class Analysis:
         results = []
         for t in best_thresholds:
             y_pred = [0 if score >= t else 1 for score in scores]
+            accuracy = accuracy_score(y, y_pred)
             report = precision_recall_fscore_support(y, y_pred)
             report_b05 = precision_recall_fscore_support(y, y_pred, beta=0.5)
             report_b2 = precision_recall_fscore_support(y, y_pred, beta=2)
             results.append({   
                 "model_name": Info.Name,
                 "threshold": t,
+                "Accuracy" : accuracy,
                 "precision_0": report[0][0],
                 "precision_0_05": report_b05[0][0],
                 "precision_0_2": report_b2[0][0],
@@ -52,7 +55,12 @@ class Analysis:
 
     @staticmethod
     def best_thresolds():
-        df = pd.read_csv('D:output/results/all_thresolds.csv')        
-        idx = df.groupby('model_name')['acc'].idxmax()
+        df = pd.read_csv('D:output/results/all_thresolds.csv')    
+        if Info.SaveType == 'FScore':
+            metric = 'fscore_0_05'
+        elif Info.Savetype == 'Accuracy': 
+            metric = 'Accuracy'
+
+        idx = df.groupby('model_name')[metric].idxmax()
         best_df = df.iloc[idx]
         best_df.to_csv('D:output/results/best_thresolds.csv', index=False, header=True, sep=';', decimal=",")
