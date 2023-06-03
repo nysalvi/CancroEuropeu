@@ -39,8 +39,8 @@ class PreLoading:
         test_iter = iter(test_loader)
         test_images, test_labels = next(test_iter)
 
-        print('Shape de images:', train_images.shape)
-        print('Shape de labels:', train_labels.shape)
+        #print('Shape de images:', train_images.shape)
+        #print('Shape de labels:', train_labels.shape)
 
         return NeuralLoader(train_loader, train_images, train_labels, dev_loader, dev_images, 
             dev_labels, test_loader, test_images, test_labels)

@@ -29,7 +29,7 @@ class Info():
         parser.add_argument('--no_pre_trained', default=True, action='store_false', help='set the model as NOT pre-trained')
         parser.add_argument('--no_feature_extract', default=True, action='store_false', help='set the model for NO features extraction')
         parser.add_argument('--Device', type=str, default='cuda:0', choices= ['cpu', 'cuda', f'cuda:{int}'], help='use "cpu", "cuda" or "cuda:x"; where "x" is gpu number, if "x" is omitted default value is 0')
-        parser.add_argument('--Optim', type=str, default=False, help='Optimizer object for loss')
+        parser.add_argument('--Optim', type=str, default='SGD', help='Optimizer object for loss')
         parser.add_argument('--SaveType', type=str, default='Accuracy', choices=['Accuracy', 'FScore'], help='save model based on characteristic')        
             #hyper parameters
         parser.add_argument('--LR', type=float, default=0.0001, help='initial learning rate value')
@@ -63,7 +63,8 @@ class Info():
 
     @staticmethod
     def update_path(name):
-        Info.Name = name         
-        Info.PATH = f"D:\\output\\{Info.Folder}\\{Info.Name}_{Info.SaveType}\\{Info.Optim}_{Info.Momentum}\\LR_{Info.LR}_Weight_{Info.WeightDecay}"
-        Info.BoardX = f"D:\\output\\runs\\{Info.Folder}\\LR_{Info.LR}_Weight_{Info.WeightDecay}\\{Info.Optim}_{Info.Momentum}_{Info.SaveType}\\"
+        Info.Name = name  
+        s = os.sep        
+        Info.PATH = f"D:{s}output{s}{Info.Folder}{s}{Info.Name}_{Info.SaveType}{s}{Info.Optim}_{Info.Momentum}{s}LR_{Info.LR}_Weight_{Info.WeightDecay}"
+        Info.BoardX = f"D:{s}output{s}runs{s}{Info.Folder}{s}LR_{Info.LR}_Weight_{Info.WeightDecay}{s}{Info.Optim}_{Info.Momentum}_{Info.SaveType}{s}"
         Info.Writer = SummaryWriter(Info.BoardX)

@@ -86,12 +86,12 @@ class Training:
             if (max_metric < measures_on_dev['acc'].round(4)):
                 contMetric = -1
                 max_metric = measures_on_dev['acc'].round(4)
-                torch.save(model.state_dict(), f'{Info.PATH}/state_dict.pt')
+                torch.save(model.state_dict(), f'{Info.PATH}{os.sep}state_dict.pt')
             
-            Info.Writer.add_scalar(f"{Info.Name}/Train/Loss", train_loss, e)
-            Info.Writer.add_scalar(f"{Info.Name}/Train/{Info.SaveType}", measures['train_acc'], e)
-            Info.Writer.add_scalar(f"{Info.Name}/Validation/Loss", measures['dev_loss'], e)
-            Info.Writer.add_scalar(f"{Info.Name}/Validation/{Info.SaveType}", measures['dev_acc'], e)
+            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Loss", train_loss, e)
+            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}{Info.SaveType}", measures['train_acc'], e)
+            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Loss", measures['dev_loss'], e)
+            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}{Info.SaveType}", measures['dev_acc'], e)
             Info.Writer.flush()
 
             contMetric+= 1
@@ -116,7 +116,7 @@ class Training:
         un_divide = transforms.Normalize([0, 0, 0], [1/0.229, 1/0.224, 1/0.225])
         un_minus = transforms.Normalize([-0.485, -0.456, -0.406], [1, 1, 1])
         
-        os.makedirs(f"{Info.PATH}/", exist_ok=True)
+        os.makedirs(f"{Info.PATH}{os.sep}", exist_ok=True)
         
         for i, (X, y) in enumerate(test_loader):                
             X, y = X.to(Info.Device).requires_grad_(), y.numpy()
@@ -137,4 +137,4 @@ class Training:
                 fig.add_subplot(rows, columns, j+1, title = 'Y(%i - %s) - Pred(%i - %s)' % (y[j], label_desc[y[j]], 
                                                                             y_pred[j], label_desc[y_pred[j]] ) )
                 plt.imshow(visualization)            
-            fig.savefig(f"{Info.PATH}/grad_cam{i}.png")
+            fig.savefig(f"{Info.PATH}{os.sep}grad_cam{i}.png")

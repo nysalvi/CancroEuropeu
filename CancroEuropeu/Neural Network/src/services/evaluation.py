@@ -51,7 +51,7 @@ class Evaluation:
     def calculate_result(self, model_ft, test_loader, epochs):
         y_true, y_pred, stack = self.predict(model_ft, test_loader)
         h_list_df = pd.DataFrame(stack)               
-        h_list_df.to_csv(f'{Info.PATH}/result.csv', 
+        h_list_df.to_csv(f'{Info.PATH}{os.sep}result.csv', 
             index=False, sep=';', header=["outputs", "true_values", "scores"], decimal=",")
 
         h_val = self.evaluate_model(y_true, y_pred)
@@ -75,14 +75,15 @@ class Evaluation:
 
     def append_results(self):
         h_list_df = pd.DataFrame(self.h_list_val)      
-        os.makedirs('D:output/results', exist_ok=True)
-        exists = not os.path.exists('D:output/results/all_results.csv')        
-        h_list_df.to_csv('D:output/results/all_results.csv', mode='a', header=exists, index=False, sep=';', decimal=",")        
+        os.makedirs('D:output{os.sep}results', exist_ok=True)
+        exists = not os.path.exists('D:output{os.sep}results{os.sep}all_results.csv')        
+        h_list_df.to_csv('D:output{os.sep}results{os.sep}all_results.csv', 
+                         mode='a', header=exists, index=False, sep=';', decimal=",")        
 
     @staticmethod
     def best_results():                
-        df = pd.read_csv('D:output/results/all_results.csv', sep=';', decimal=',')
+        df = pd.read_csv('D:output{os.sep}results{os.sep}all_results.csv', sep=';', decimal=',')
         idx = df.groupby('model_name')['fbeta'].idxmax()
         best_df = df.iloc[idx]
-        best_df.to_csv('D:output/results/best_results.csv', index=False, header=True, sep=';', decimal=",")
+        best_df.to_csv('D:output{os.sep}results{os.sep}best_results.csv', index=False, header=True, sep=';', decimal=",")
         

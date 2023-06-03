@@ -59,8 +59,8 @@ class PreProcessing:
         datasets.ImageFolder.find_classes = find_classes
         datasets.ImageFolder.make_dataset = make_dataset
 
-        train_images=datasets.ImageFolder(self.dataPath + '/train', transform=data_transforms['train'])
-        dev_images=datasets.ImageFolder(self.dataPath + '/dev', transform=data_transforms['dev'])
-        test_images=datasets.ImageFolder(self.dataPath + '/test', transform=data_transforms['test'])
+        train_images=datasets.ImageFolder(self.dataPath + f'{os.sep}train', transform=data_transforms['train'])
+        dev_images=datasets.ImageFolder(self.dataPath + f'{os.sep}dev', transform=data_transforms['dev'])
+        test_images=datasets.ImageFolder(self.dataPath + f'{os.sep}test', transform=data_transforms['test'])
 
         return NeuralData(train_images, dev_images, test_images)
