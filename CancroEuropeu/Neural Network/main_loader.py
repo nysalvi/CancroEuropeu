@@ -100,8 +100,7 @@ if __name__ == "__main__":
         for key in constant_keys:
             file_.pop(key)        
         names, values = list(file_.keys()), list(file_.values())                      
-
-        del temp_keys
+        
         del constant_keys
         del file_
         del dict_list
