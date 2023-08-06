@@ -131,8 +131,8 @@ class Training:
 
             contMetric+= 1
             if contMetric == Info.Tolerance:
-                torch.save(model.state_dict(), f'{Info.PATH}{os.sep}{Info.FileName}.pt')
-                #os.rename(f'{Info.PATH}{os.sep}state_dict.pt', f'{Info.PATH}{os.sep}finished_dict.pt')
+                #torch.save(model.state_dict(), f'{Info.PATH}{os.sep}{Info.FileName}.pt')
+                os.rename(f'{Info.PATH}{os.sep}state_dict.pt', f'{Info.PATH}{os.sep}finished_dict.pt')
                 break
             pbar.set_postfix(measures)     
             e_measures += [measures]
