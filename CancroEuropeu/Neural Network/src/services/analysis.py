@@ -46,7 +46,7 @@ class Analysis:
         
         df_results.to_csv('D:output{os.sep}results{os.sep}all_thresolds.csv', mode='a', header=exists, index=False, sep=';', decimal=",")        
 
-        fpr, tpr, thresholds = metrics.roc_curve(y, scores, pos_label=0)
+        fpr, tpr, thresholds = metrics.roc_curve(y, scores, pos_label=1)
         roc_auc = metrics.auc(fpr, tpr)
         display = metrics.RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc,
                                           estimator_name='estimator')
@@ -56,7 +56,7 @@ class Analysis:
     @staticmethod
     def best_thresolds():
         df = pd.read_csv('D:output{os.sep}results{os.sep}all_thresolds.csv')    
-        if Info.SaveType == 'FScore':
+        if Info.SaveType == 'FBeta':
             metric = 'fscore_0_05'
         elif Info.Savetype == 'Accuracy': 
             metric = 'Accuracy'
