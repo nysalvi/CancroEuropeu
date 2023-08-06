@@ -1,5 +1,3 @@
-from pickletools import optimize
-import torch
 from torchvision import models
 from torch import nn, optim
 from ..model.enums.model_name_enum import ModelName
@@ -7,6 +5,8 @@ from ..model.neural_loader import NeuralLoader
 from ..model.device_data import DeviceData
 from ..model.model_fit_data import ModelFitData
 from ..utils.global_info import Info
+import torch
+import os
 
 class NeuralNetworkModels:
     def __init__(self):
@@ -17,58 +17,58 @@ class NeuralNetworkModels:
             for param in model.parameters():
                 param.requires_grad = False
     
-    def initialize_model(self, model_name: ModelName, num_classes:int, feature_extract:bool, use_pretrained:bool=True):
+    def initialize_model(self, model_name: ModelName, num_classes:int, feature_extract:bool, use_pretrained:bool):
         model_ft = None
         input_size = 224
 
         if model_name == ModelName.RESNET:
-            model_ft = models.resnet18(pretrained=use_pretrained)                        
+            model_ft = models.resnet18(pretrained=not use_pretrained)                        
             self.set_parameter_requires_grad(model_ft, feature_extract)
             num_ftrs = model_ft.fc.in_features            
             model_ft.fc = nn.Linear(num_ftrs, num_classes)                                    
             grad_layer = model_ft.layer4[-1]
             
         #elif model_name == ModelName.ALEXNET:
-        #    model_ft = models.alexnet(pretrained=use_pretrained)            
+        #    model_ft = models.alexnet(pretrained=not use_pretrained)            
         #    self.set_parameter_requires_grad(model_ft, feature_extract)
         #    num_ftrs = model_ft.classifier[6].in_features
         #    model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
 
         elif model_name == ModelName.VGG16:
-            model_ft = models.vgg16_bn(pretrained=use_pretrained)            
+            model_ft = models.vgg16_bn(pretrained=not use_pretrained)            
             self.set_parameter_requires_grad(model_ft, feature_extract)
             num_ftrs = model_ft.classifier[6].in_features
             model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)            
             grad_layer = model_ft.features[-1]            
         #elif model_name == ModelName.MOBILENET_V2:
-        #    model_ft = models.mobilenet_v2(pretrained=use_pretrained)
+        #    model_ft = models.mobilenet_v2(pretrained=not use_pretrained)
         #    self.set_parameter_requires_grad(model_ft, feature_extract)            
         #    num_ftrs = model_ft.classifier[1].in_features
         #    model_ft.classifier[1] = nn.Linear(num_ftrs,num_classes)
         #
         #elif model_name == ModelName.VGG11:
-        #    model_ft = models.vgg11_bn(pretrained=use_pretrained)
+        #    model_ft = models.vgg11_bn(pretrained=not use_pretrained)
         #    
         #    self.set_parameter_requires_grad(model_ft, feature_extract)
         #    num_ftrs = model_ft.classifier[6].in_features
         #    model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
         #
         #elif model_name == ModelName.MOBILENET_V3_SMALL:
-        #    model_ft = models.mobilenet_v3_small(pretrained=use_pretrained)
+        #    model_ft = models.mobilenet_v3_small(pretrained=not use_pretrained)
         #    
         #    self.set_parameter_requires_grad(model_ft, feature_extract)
         #    num_ftrs = model_ft.classifier[3].in_features
         #    model_ft.classifier[3] = nn.Linear(num_ftrs,num_classes)
         #
         #elif model_name == ModelName.MOBILENET_V3_LARGE:
-        #    model_ft = models.mobilenet_v3_large(pretrained=use_pretrained)
+        #    model_ft = models.mobilenet_v3_large(pretrained=not use_pretrained)
         #
         #    self.set_parameter_requires_grad(model_ft, feature_extract)
         #    num_ftrs = model_ft.classifier[3].in_features
         #    model_ft.classifier[3] = nn.Linear(num_ftrs,num_classes)
 
         #elif model_name == ModelName.SQUEEZENET:
-        #    model_ft = models.squeezenet1_0(pretrained=use_pretrained)
+        #    model_ft = models.squeezenet1_0(pretrained=not use_pretrained)
         #
         #    self.set_parameter_requires_grad(model_ft, feature_extract)
         #    model_ft.classifier[1] = nn.Conv2d(512, num_classes, kernel_size=(1,1), stride=(1,1))
@@ -84,21 +84,21 @@ class NeuralNetworkModels:
         #    grad_layer = model_ft.features[-1]
 
         elif model_name == ModelName.VGG19:
-            model_ft = models.vgg19_bn(pretrained=use_pretrained)                   
+            model_ft = models.vgg19_bn(pretrained=not use_pretrained)                   
             num_ftrs = model_ft.classifier[6].in_features
             self.set_parameter_requires_grad(model_ft, feature_extract)            
             model_ft.classifier[6] = nn.Linear(num_ftrs, num_classes)  
             grad_layer = model_ft.features[-1]
 
         elif model_name == ModelName.RESNET50:
-            model_ft = models.resnet50(pretrained=use_pretrained)               
+            model_ft = models.resnet50(pretrained=not use_pretrained)               
             self.set_parameter_requires_grad(model_ft, feature_extract)
             num_ftrs = model_ft.fc.in_features
             model_ft.fc = nn.Linear(num_ftrs, num_classes)
             grad_layer = model_ft.layer4[-1]
 
         elif model_name == ModelName.INCEPTIONV3:
-            model_ft = models.inception.inception_v3(pretrained=use_pretrained)   
+            model_ft = models.inception.inception_v3(pretrained=not use_pretrained)   
             self.set_parameter_requires_grad(model_ft, feature_extract)
             num_ftrs = model_ft.fc.in_features            
             model_ft.fc = nn.Linear(num_ftrs, num_classes)            
@@ -107,7 +107,8 @@ class NeuralNetworkModels:
         else:
             print("Invalid model name, exiting...")
             exit()
-        
+        if use_pretrained:
+            model_ft.load_state_dict(torch.load(f'{Info.PATH}{os.sep}state_dict.pt'))
         return model_ft, input_size, grad_layer
 
     def optimize_model(self, feature_extract, model_ft, optimizer=False, 
