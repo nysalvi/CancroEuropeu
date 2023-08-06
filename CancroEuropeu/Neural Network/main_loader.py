@@ -100,8 +100,7 @@ if __name__ == "__main__":
         for key in constant_keys:
             file_.pop(key)        
         names, values = list(file_.keys()), list(file_.values())                      
-
-        del temp_keys
+        
         del constant_keys
         del file_
         del dict_list
@@ -116,7 +115,8 @@ if __name__ == "__main__":
             args = ''
             for i in range(len(values)):
                 args+= f'--{names[i]} {values[i][indexes[i]]} '                                        
-            os.system(f'{run} {temp_keys} {args}')                    
+            if os.system(f'{run} {temp_keys} {args}') != 0:
+                exit()
             dynamicReduction(total, indexes, reset)            
 
     #Analysis.best_thresolds()
