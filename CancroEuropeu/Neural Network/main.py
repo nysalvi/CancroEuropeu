@@ -28,10 +28,7 @@ batch_size = constants['batch_size']
 num_classes = constants['num_classes']
 feature_extract = constants['no_feature_extract']
 num_epochs = constants['num_epochs']
-resume_training = os.path.exists(f'{Info.PATH}{os.sep}state_dict.pt') and not os.path.exists(
-    f'{Info.PATH}{os.sep}finished_dict.pt')
 
-        
 #End constants
 selected_models = Models.select_models(ModelName[Info.Name])
 #Images.download(currentTempFolder, "data.zip")
@@ -41,7 +38,12 @@ selected_models = Models.select_models(ModelName[Info.Name])
 evaluation = Evaluation()
     
 for neural_model_name in selected_models:    
-    Info.update_path(neural_model_name.name)
+    Info.update_path(neural_model_name.name)    
+    finished_training = os.path.exists(f'{Info.PATH}{os.sep}finished_dict.pt')
+    if finished_training:
+        exit(0)
+
+    resume_training = os.path.exists(f'{Info.PATH}{os.sep}state_dict.pt')
     if resume_training:    
         f = io.FileIO(f'{Info.PATH}{os.sep}stats.txt', 'r')
         Info = pickle.load(f)
