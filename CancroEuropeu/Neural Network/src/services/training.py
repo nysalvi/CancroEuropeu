@@ -105,6 +105,8 @@ class Training:
             if (max_metric < measures_on_dev['fbeta'].round(4)):                
                 contMetric = -1
                 max_metric = measures_on_dev['fbeta'].round(4)
+                print(f'Path {Info.PATH}')
+                print(f'Salva Garai {Info.LR} & {Info.WeightDecay}')
                 torch.save(model.state_dict(), f'{Info.PATH}{os.sep}state_dict.pt')
                 Info.Epoch = e                
                 f = io.FileIO(f'{Info.PATH}{os.sep}stats.txt', 'a')
@@ -138,7 +140,8 @@ class Training:
                     time.sleep(1)
                     if attempt == 5: break
                     attempt +=1                    
-                os.rename(f'{Info.PATH}{os.sep}state_dict.pt', f'{Info.PATH}{os.sep}finished_dict.pt')
+                if os.path.exists(f'{Info.PATH}{os.sep}state_dict.pt'):                
+                    os.rename(f'{Info.PATH}{os.sep}state_dict.pt', f'{Info.PATH}{os.sep}finished_dict.pt')
                 break
             pbar.set_postfix(measures)     
             e_measures += [measures]
