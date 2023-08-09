@@ -20,6 +20,7 @@ class Info():
     BoardX = ''    
     Activation = []
     Epoch = 0
+    Epochs = 0
     Tolerance = 0
     FileName = ''
 
@@ -28,10 +29,10 @@ class Info():
         parser = argparse.ArgumentParser()                
             #model
         parser.add_argument('--Name', type=str, default='ALL', help='choose whether to train with a single model or all of them')        
-        parser.add_argument('--num_epochs', type=int, default=50, help='max number of training epochs to execute')
+        parser.add_argument('--Epochs', type=int, default=50, help='max number of training epochs to execute')
         parser.add_argument('--no_pre_trained', default=True, action='store_false', help='set the model as NOT pre-trained')
         parser.add_argument('--no_feature_extract', default=True, action='store_false', help='set the model for NO features extraction')
-        parser.add_argument('--Device', type=str, default='cuda:0', choices= ['cpu', 'cuda', f'cuda:{int}'], help='use "cpu", "cuda" or "cuda:x"; where "x" is gpu number, if "x" is omitted default value is 0')
+        parser.add_argument('--Device', type=str, default='cuda:0', choices= ['auto', 'cpu', 'cuda', f'cuda:{int}', 'xla'], help='use "cpu", "cuda" or "cuda:x"; where "x" is gpu number, if "x" is omitted default value is 0')
         parser.add_argument('--Optim', type=str, default='SGD', help='Optimizer object for loss')
         parser.add_argument('--Tolerance', type=int, default=10, help='how many epochs model will training when stagnated before ending')        
         parser.add_argument('--SaveType', type=str, default='Accuracy', choices=['Accuracy', 'FBeta'], help='save model based on characteristic')        
@@ -70,6 +71,9 @@ class Info():
     def update_path(name):
         Info.Name = name  
         s = os.sep        
-        Info.PATH = f"output{s}results{s}{Info.Folder}{s}{Info.Name}_{Info.SaveType}{s}{Info.Optim}_{Info.Momentum}{s}LR_{Info.LR}_Weight_{Info.WeightDecay}"
-        Info.BoardX = f"output{s}board{s}{Info.Folder}{s}LR_{Info.LR}_Weight_{Info.WeightDecay}{s}{Info.Optim}_{Info.Momentum}_{Info.SaveType}{s}"
+        #Info.PATH = f"D:{s}output{s}results{s}{Info.Folder}{s}{Info.Name}_{Info.SaveType}{s}{Info.Optim}_{Info.Momentum}{s}LR_{Info.LR}_Weight_{Info.WeightDecay}"
+        #Info.BoardX = f"D:{s}output{s}board{s}{Info.Folder}{s}LR_{Info.LR}_Weight_{Info.WeightDecay}{s}{Info.Optim}_{Info.Momentum}_{Info.SaveType}{s}"
+        
+        Info.PATH = f"D:{s}output{s}results{s}{Info.Folder}{s}{Info.Name}_{Info.SaveType}{s}Tolerance{Info.Tolerance}_Epochs{Info.Epochs}{s}LR_{Info.LR}_Weight_{Info.WeightDecay}"
+        Info.BoardX = f"D:{s}output{s}board{s}{Info.Folder}{s}LR_{Info.LR}_Weight_{Info.WeightDecay}{s}{Info.Optim}_{Info.Momentum}_{Info.SaveType}{s}"
         Info.Writer = SummaryWriter(Info.BoardX)
