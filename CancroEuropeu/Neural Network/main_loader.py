@@ -1,13 +1,16 @@
-from operator import length_hint
 from src.services.evaluation import Evaluation
 from src.services.analysis import Analysis
-from io import TextIOWrapper
+from operator import length_hint
 from typing import Dict, List
+from io import TextIOWrapper
+from subprocess import check_call
 import numpy as np
 import itertools
+import subprocess
 import argparse
 import pickle
 import copy
+import sys
 import os
 
 def removeComments(file_:TextIOWrapper):
@@ -67,7 +70,7 @@ def toDictionary(path:str, args:list):
             values, i = getValues(clean_f, i)                        
             variables.update({key : values})                                              
             key, i = getKey(clean_f, i)            
-        variables = convertNumber(variables)        
+        #variables = convertNumber(variables)        
         file_list.append(variables)            
     return file_list
 
@@ -92,9 +95,12 @@ if __name__ == "__main__":
     for file_ in dict_list:
         temp_keys = ''
         constant_keys = []
+        new_keys = []
         for key, value in file_.items():            
             if len(value) == 1:                
                 temp_keys+= f'--{key} {value[0]} '       
+                new_keys.append(f'--{key}')
+                new_keys.append(value[0])
                 constant_keys.append(key)                
 
         for key in constant_keys:
@@ -109,14 +115,22 @@ if __name__ == "__main__":
 
         indexes = [len(x) - 1 for x in values]
         reset = copy.deepcopy(indexes)
-        run = f'cmd /c py "{os.curdir}{os.sep}Neural Network{os.sep}main.py"'    
-        total = len(values) - 1       
+        #run = f'{os.curdir}{os.sep}Neural Network{os.sep}main.py'
+        run = f'cmd /c py "{os.curdir}{os.sep}Neural Network{os.sep}main.py"'
+        total = len(values) - 1      
         while indexes[0] >= 0:                        
+            #the_keys = []
             args = ''
             for i in range(len(values)):
+                #the_keys.append(f'--{names[i]}')
+                #the_keys.append(values[i][indexes[i]])
                 args+= f'--{names[i]} {values[i][indexes[i]]} '                                        
-            if os.system(f'{run} {temp_keys} {args}') != 0:
-                exit()
+            #the_keys.insert(0, run)
+
+            if os.system(f'{run} {temp_keys} {args}') != 0: exit()
+            
+            #subprocess.run(f'python3 {run} {temp_keys} {args}') 
+            #subprocess.run(the_keys + new_keys)
             dynamicReduction(total, indexes, reset)            
 
     #Analysis.best_thresolds()
