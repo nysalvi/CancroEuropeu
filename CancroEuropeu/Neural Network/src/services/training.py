@@ -100,7 +100,8 @@ class Training:
                     'dev_loss': measures_on_dev['loss'], 'dev_fbeta' : measures_on_dev['fbeta'], 
                     'dev_acc' : measures_on_dev['acc'], 'dev_fscore' : measures_on_dev['fscore'], 
                     'dev_prec' : measures_on_dev['prec'], 'dev_recall' : measures_on_dev['recall'],
-                    'dev_auc' : measures_on_dev['auc']  }
+                    'dev_auc' : measures_on_dev['auc']  
+            }
 
             if max_metric < measures_on_dev['fbeta'].round(4):                
                 contMetric = -1
@@ -130,8 +131,8 @@ class Training:
 
                 Info.Writer.flush()
 
-            contMetric+= 1
-            if contMetric == Info.Tolerance:
+            Info.CurTolerance+= 1
+            if Info.CurTolerance == Info.Tolerance:
                 #torch.save(model.state_dict(), f'{Info.PATH}{os.sep}{Info.FileName}.pt')
                 attempt = 1
                 while os.path.exists(f'{Info.PATH}{os.sep}state_dict.pt'):                
