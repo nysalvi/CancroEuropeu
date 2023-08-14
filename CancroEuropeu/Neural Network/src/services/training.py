@@ -88,7 +88,7 @@ class Training:
         max_metric = 0
         contMetric = 0
         e_measures = []        
-        pbar = tqdm(range(Info.Epoch,self.num_epochs))        
+        pbar = tqdm(range(Info.Epoch,self.num_epochs + 1))        
         for e in pbar:
             train_loss = self.train_epoch(model, train_loader, criterion)
             measures_on_train = self.eval_model(model, train_loader, criterion)
@@ -102,7 +102,7 @@ class Training:
                     'dev_prec' : measures_on_dev['prec'], 'dev_recall' : measures_on_dev['recall'],
                     'dev_auc' : measures_on_dev['auc']  }
 
-            if (max_metric < measures_on_dev['fbeta'].round(4)):                
+            if max_metric < measures_on_dev['fbeta'].round(4):                
                 contMetric = -1
                 max_metric = measures_on_dev['fbeta'].round(4)
                 print(f'Path {Info.PATH}')
@@ -112,25 +112,23 @@ class Training:
                 f = io.FileIO(f'{Info.PATH}{os.sep}stats.txt', 'a')
                 pickle.dump(Info, f)
 
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Loss", train_loss, e)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}FBeta", measures['train_fbeta'], e)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Accuracy", measures['train_acc'], e)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}FScore", measures['train_fscore'], e)            
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Precision", measures['train_prec'], e)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Recall", measures['train_recall'], e)            
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}AUC", measures['train_auc'], e)            
 
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Loss", train_loss, e)
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}FBeta", measures['train_fbeta'], e)
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Accuracy", measures['train_acc'], e)
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}FScore", measures['train_fscore'], e)            
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Precision", measures['train_prec'], e)
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Recall", measures['train_recall'], e)            
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}AUC", measures['train_auc'], e)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Loss", measures['dev_loss'], e)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}FBeta", measures['dev_fbeta'], e)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Accuracy", measures['dev_acc'], e)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}FScore", measures['dev_fscore'], e)            
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Precision", measures['dev_prec'], e)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Recall", measures['dev_recall'], e)            
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}AUC", measures['dev_auc'], e)
 
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Loss", measures['dev_loss'], e)
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}FBeta", measures['dev_fbeta'], e)
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Accuracy", measures['dev_acc'], e)
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}FScore", measures['dev_fscore'], e)            
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Precision", measures['dev_prec'], e)
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Recall", measures['dev_recall'], e)            
-            Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}AUC", measures['dev_auc'], e)
-
-
-            Info.Writer.flush()
+                Info.Writer.flush()
 
             contMetric+= 1
             if contMetric == Info.Tolerance:
