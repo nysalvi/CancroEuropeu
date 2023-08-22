@@ -22,7 +22,7 @@ class Training:
     def __init__(self, scheduler, optimizer, num_epochs):
         self.optimizer = optimizer
         self.num_epochs = num_epochs
-        self.scheduler = scheduler(optimizer, num_epochs)
+        self.scheduler = scheduler(optimizer, T_max=num_epochs, last_epoch=Info.Epoch-1)
 
     def train_epoch(self, model, trainLoader, criterion):
         model.train()
@@ -42,7 +42,7 @@ class Training:
             self.optimizer.step()        
             self.optimizer.zero_grad()
 
-            losses.append(loss.item())                
+            losses.append(loss.item())
         self.scheduler.step()
         model.eval()
         return np.mean(losses)
@@ -85,15 +85,13 @@ class Training:
         return measures
 
     def train_and_evaluate(self, model, train_loader, dev_loader, criterion):                
-        max_metric = 0
-        contMetric = 0
         e_measures = []        
-        pbar = tqdm(range(Info.Epoch,self.num_epochs + 1))        
+        pbar = tqdm(range(Info.Epoch, self.num_epochs))        
         for e in pbar:
             train_loss = self.train_epoch(model, train_loader, criterion)
             measures_on_train = self.eval_model(model, train_loader, criterion)
             measures_on_dev = self.eval_model(model, dev_loader, criterion)
-            measures = {'epoch': e, 'train_loss': train_loss, 'train_fbeta' : measures_on_train['fbeta'], 
+            measures = {'epoch': Info.Epoch, 'train_loss': train_loss, 'train_fbeta' : measures_on_train['fbeta'], 
                     'train_acc' : measures_on_train['acc'], 'train_fscore' : measures_on_train['fscore'], 
                     'train_prec' : measures_on_train['prec'], 'train_recall' : measures_on_train['recall'],
                     'train_auc' : measures_on_train['auc'], 
@@ -102,46 +100,38 @@ class Training:
                     'dev_prec' : measures_on_dev['prec'], 'dev_recall' : measures_on_dev['recall'],
                     'dev_auc' : measures_on_dev['auc']  
             }
-
-            if max_metric < measures_on_dev['fbeta'].round(4):                
-                contMetric = -1
-                max_metric = measures_on_dev['fbeta'].round(4)
-                print(f'Path {Info.PATH}')
-                print(f'Salva Garai {Info.LR} & {Info.WeightDecay}')
+            if Info.FBeta < measures_on_dev['fbeta'].round(4):                
+                Info.CurTolerance = -1
+                Info.FBeta = measures_on_dev['fbeta'].round(4)
                 torch.save(model.state_dict(), f'{Info.PATH}{os.sep}state_dict.pt')
-                Info.Epoch = e                
-                f = io.FileIO(f'{Info.PATH}{os.sep}stats.txt', 'a')
+                f = io.FileIO(f'{Info.PATH}{os.sep}stats.txt', 'w')
                 pickle.dump(Info, f)
 
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Loss", train_loss, e)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}FBeta", measures['train_fbeta'], e)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Accuracy", measures['train_acc'], e)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}FScore", measures['train_fscore'], e)            
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Precision", measures['train_prec'], e)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Recall", measures['train_recall'], e)            
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}AUC", measures['train_auc'], e)            
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Loss", train_loss, Info.Epoch)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}FBeta", measures['train_fbeta'], Info.Epoch)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Accuracy", measures['train_acc'], Info.Epoch)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}FScore", measures['train_fscore'], Info.Epoch)            
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Precision", measures['train_prec'], Info.Epoch)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Recall", measures['train_recall'], Info.Epoch)            
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}AUC", measures['train_auc'], Info.Epoch)            
 
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Loss", measures['dev_loss'], e)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}FBeta", measures['dev_fbeta'], e)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Accuracy", measures['dev_acc'], e)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}FScore", measures['dev_fscore'], e)            
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Precision", measures['dev_prec'], e)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Recall", measures['dev_recall'], e)            
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}AUC", measures['dev_auc'], e)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Loss", measures['dev_loss'], Info.Epoch)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}FBeta", measures['dev_fbeta'], Info.Epoch)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Accuracy", measures['dev_acc'], Info.Epoch)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}FScore", measures['dev_fscore'], Info.Epoch)            
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Precision", measures['dev_prec'], Info.Epoch)
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Recall", measures['dev_recall'], Info.Epoch)            
+                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}AUC", measures['dev_auc'], Info.Epoch)
 
                 Info.Writer.flush()
 
             Info.CurTolerance+= 1
-            if Info.CurTolerance == Info.Tolerance:
-                #torch.save(model.state_dict(), f'{Info.PATH}{os.sep}{Info.FileName}.pt')
-                attempt = 1
-                while os.path.exists(f'{Info.PATH}{os.sep}state_dict.pt'):                
-                    time.sleep(1)
-                    if attempt == 5: break
-                    attempt +=1                    
-                if os.path.exists(f'{Info.PATH}{os.sep}state_dict.pt'):                
-                    os.rename(f'{Info.PATH}{os.sep}state_dict.pt', f'{Info.PATH}{os.sep}finished_dict.pt')
-                break
+            Info.Epoch += 1                
+
+            if Info.CurTolerance == Info.Tolerance or Info.Epoch == Info.Epochs :
+                Info.Completed = True
+                f = io.FileIO(f'{Info.PATH}{os.sep}stats.txt', 'w')
+                pickle.dump(Info, f)
             pbar.set_postfix(measures)     
             e_measures += [measures]
         return pd.DataFrame(e_measures), model

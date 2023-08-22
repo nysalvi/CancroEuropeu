@@ -21,9 +21,11 @@ class Info():
     Activation = []
     Epoch = 0
     Epochs = 0
+    FBeta = 0
     Tolerance = 0
+    CurTolerance = 0
     FileName = ''
-
+    Completed = False
     @staticmethod
     def args():
         parser = argparse.ArgumentParser()                
@@ -39,7 +41,7 @@ class Info():
         parser.add_argument('--SaveType', type=str, default='FBeta', choices=['Accuracy', 'FBeta'], help='save model based on characteristic')        
             #hyper parameters
         parser.add_argument('--LR', type=float, default=0.0001, help='initial learning rate value')
-        parser.add_argument('--Epoch', type=int, default=1, help='Current epoch')
+        parser.add_argument('--Epoch', type=int, default=0, help='Current epoch')
         parser.add_argument('--LR_Decay', type=float, default=1, help='learning rate decayment')
         parser.add_argument('--WeightDecay', type=float, default=0.01, help='decayment of parameters weight')            
         parser.add_argument('--Momentum', type=float, default=0.9, help='momentum for optimizer')

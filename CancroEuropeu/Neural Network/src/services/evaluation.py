@@ -75,15 +75,15 @@ class Evaluation:
 
     def append_results(self):
         h_list_df = pd.DataFrame(self.h_list_val)      
-        os.makedirs('D:output{os.sep}results', exist_ok=True)
-        exists = not os.path.exists('D:output{os.sep}results{os.sep}all_results.csv')        
-        h_list_df.to_csv('D:output{os.sep}results{os.sep}all_results.csv', 
+        os.makedirs(f'D:output{os.sep}results', exist_ok=True)
+        exists = not os.path.exists(f'D:output{os.sep}results{os.sep}all_results.csv')        
+        h_list_df.to_csv(f'D:output{os.sep}results{os.sep}all_results.csv', 
                          mode='a', header=exists, index=False, sep=';', decimal=",")        
 
     @staticmethod
     def best_results():                
-        df = pd.read_csv('D:output{os.sep}results{os.sep}all_results.csv', sep=';', decimal=',')
+        df = pd.read_csv(f'D:output{os.sep}results{os.sep}all_results.csv', sep=';', decimal=',')
         idx = df.groupby('model_name')['fbeta'].idxmax()
         best_df = df.iloc[idx]
-        best_df.to_csv('D:output{os.sep}results{os.sep}best_results.csv', index=False, header=True, sep=';', decimal=",")
+        best_df.to_csv(f'D:output{os.sep}results{os.sep}best_results.csv', index=False, header=True, sep=';', decimal=",")
         

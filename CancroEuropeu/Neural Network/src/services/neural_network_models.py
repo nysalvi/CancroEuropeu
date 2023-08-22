@@ -20,7 +20,7 @@ class NeuralNetworkModels:
     def initialize_model(self, model_name: ModelName, num_classes:int, feature_extract:bool, use_pretrained:bool):
         model_ft = None
         input_size = 224
-
+        
         if model_name == ModelName.RESNET:
             model_ft = models.resnet18(pretrained=not use_pretrained)                        
             self.set_parameter_requires_grad(model_ft, feature_extract)

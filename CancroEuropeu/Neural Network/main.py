@@ -38,18 +38,19 @@ selected_models = Models.select_models(ModelName[Info.Name])
 evaluation = Evaluation()
     
 for neural_model_name in selected_models:    
+    Info.Completed = False
     Info.update_path(neural_model_name.name)    
-    finished_training = os.path.exists(f'{Info.PATH}{os.sep}finished_dict.pt')
-    if finished_training:
-        exit(0)
+    
+    resume_training = os.path.exists(f'{Info.PATH}{os.sep}stats.txt')
 
-    resume_training = os.path.exists(f'{Info.PATH}{os.sep}state_dict.pt')
     if resume_training:    
         f = io.FileIO(f'{Info.PATH}{os.sep}stats.txt', 'r')
         Info = pickle.load(f)
-    os.makedirs(Info.PATH, exist_ok=True)
-    os.makedirs(Info.BoardX, exist_ok=True)
+        if Info.Completed: 
+            pass
 
+    os.makedirs(Info.PATH, exist_ok=True)
+    os.makedirs(Info.BoardX, exist_ok=True)    
     print(f"\n-------------------- Current model: {neural_model_name.name} --------------------\n")
     neuralNetworkModels = NeuralNetworkModels()
     model_ft, input_size, grad_layer = neuralNetworkModels.initialize_model(neural_model_name, num_classes, 

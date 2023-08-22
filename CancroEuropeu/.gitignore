@@ -2,11 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
 # C extensions
 *.so
 
 # Distribution / packaging
+.idea
 .Python
 build/
 develop-eggs/
@@ -131,6 +131,10 @@ dmypy.json
 # Neural network folders
 temp
 output
-
+runs.ps1
+antidesligamento.bat
+dados.csv
+events_eraser.bat
+LICENSE
 # Neural network models
 *.pth
