@@ -120,7 +120,8 @@ class Training:
         pbar = tqdm(range(Info.Epoch, self.num_epochs))        
         header = ['model', 'mode', 'metric', 'epoch', 'lr', 'wd', 'value'] 
         df = pd.DataFrame([], columns=header)
-        df.to_csv(f'{Info.BoardX}\\data.csv', mode='a', index=False)
+        if Info.Epoch == 0:
+            df.to_csv(f'{Info.BoardX}\\data.csv', mode='a', index=False)
         for e in pbar:
             measures_on_train = self.train_epoch(model, train_loader, criterion)            
             measures_on_dev = self.eval_model(model, dev_loader, criterion)
