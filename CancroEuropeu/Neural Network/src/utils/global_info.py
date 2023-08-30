@@ -25,7 +25,9 @@ class Info():
     Tolerance = 0
     CurTolerance = 0
     FileName = ''
+    info_list = []
     Completed = False
+    
     @staticmethod
     def args():
         parser = argparse.ArgumentParser()                
@@ -79,4 +81,4 @@ class Info():
         
         #Info.PATH = f"D:{s}output{s}results{s}{Info.Folder}{s}{Info.Name}_{Info.SaveType}{s}Tolerance{Info.Tolerance}_Epochs{Info.Epochs}{s}LR_{Info.LR}_Weight_{Info.WeightDecay}"
         #Info.BoardX = f"D:{s}output{s}board{s}{Info.Folder}{s}LR_{Info.LR}_Weight_{Info.WeightDecay}{s}{Info.Optim}_{Info.Momentum}_{Info.SaveType}{s}"
-        Info.Writer = SummaryWriter(Info.BoardX)
+        #Info.Writer = SummaryWriter(Info.BoardX)

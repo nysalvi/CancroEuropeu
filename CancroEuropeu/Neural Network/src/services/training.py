@@ -10,9 +10,11 @@ from torch import nn, optim
 from tqdm.auto import tqdm
 import pandas as pd
 import numpy as np
-import pickle 
+import binascii
 import torch
+import json
 import math
+import pickle
 import time
 import os
 import io
@@ -22,18 +24,33 @@ class Training:
     def __init__(self, scheduler, optimizer, num_epochs):
         self.optimizer = optimizer
         self.num_epochs = num_epochs
-        self.scheduler = scheduler(optimizer, T_max=num_epochs, last_epoch=Info.Epoch-1)
-
+        self.scheduler = scheduler(optimizer, T_max=num_epochs, last_epoch=-1)
+        for i in range(Info.Epoch): self.scheduler.step()
+        
     def train_epoch(self, model, trainLoader, criterion):
         model.train()
-        losses = []        
+        losses = []      
+        total = 0
+        ground_truth = np.zeros(shape=len(trainLoader.dataset))
+        prediction = np.zeros(shape=len(trainLoader.dataset))
+        scores = np.zeros(shape=len(trainLoader.dataset))        
+        cont = 0
+        correct = 0
         for X, y in trainLoader:    
             X, y = X.to(Info.Device), y.to(Info.Device)            
+            ground_truth[cont:cont + len(X)] = y.cpu().data.numpy()                
+
             # (1) Passar os dados pela rede neural (forward)
             if model._get_name() == 'Inception3':
                 output = model(X)[0].squeeze()            
             else:
                 output = model(X).squeeze()                       
+            probability_output = nn.Sigmoid()(output)
+            scores[cont:cont + len(X)] = probability_output.cpu().data.numpy()
+            y_pred = (probability_output >= 0.5).float()
+            prediction[cont:cont + len(X)] = y_pred.cpu().data.numpy()                
+            total += len(y)
+
             # (2) Calcular o erro da saída da rede com a classe das instâncias (loss)                    
             loss = criterion(output, y.float())        
             # (3) Usar o erro para calcular quanto cada peso (wi) contribuiu com esse erro (backward)
@@ -43,10 +60,24 @@ class Training:
             self.optimizer.zero_grad()
 
             losses.append(loss.item())
-        self.scheduler.step()
-        model.eval()
-        return np.mean(losses)
+            correct += (y_pred == y).sum().cpu().data.numpy()                
+            cont+=len(X)
 
+        self.scheduler.step()
+
+        acc = correct/total
+        fbeta = fbeta_score(ground_truth, prediction, beta=0.5)                                                                            
+        fscore = f1_score(ground_truth, prediction)
+        precision = precision_score(ground_truth, prediction)
+        recall = recall_score(ground_truth, prediction)
+        fpr, tpr, _ = roc_curve(ground_truth, scores)
+        roc_auc = auc(fpr, tpr)
+
+        model.eval()
+
+        measures = {'loss' : np.mean(losses), 'fbeta' : fbeta, 'acc': acc, 'fscore': fscore, 
+                    'prec': precision, 'recall':recall, 'auc':roc_auc}
+        return measures
     def eval_model(self, model, loader, criterion):        
         total = 0
         correct = 0
@@ -87,11 +118,11 @@ class Training:
     def train_and_evaluate(self, model, train_loader, dev_loader, criterion):                
         e_measures = []        
         pbar = tqdm(range(Info.Epoch, self.num_epochs))        
+        header = ['model', 'mode', 'metric', 'epoch', 'lr', 'wd', 'value']        
         for e in pbar:
-            train_loss = self.train_epoch(model, train_loader, criterion)
-            measures_on_train = self.eval_model(model, train_loader, criterion)
+            measures_on_train = self.train_epoch(model, train_loader, criterion)            
             measures_on_dev = self.eval_model(model, dev_loader, criterion)
-            measures = {'epoch': Info.Epoch, 'train_loss': train_loss, 'train_fbeta' : measures_on_train['fbeta'], 
+            measures = {'epoch': Info.Epoch, 'train_loss': measures_on_train['loss'], 'train_fbeta' : measures_on_train['fbeta'], 
                     'train_acc' : measures_on_train['acc'], 'train_fscore' : measures_on_train['fscore'], 
                     'train_prec' : measures_on_train['prec'], 'train_recall' : measures_on_train['recall'],
                     'train_auc' : measures_on_train['auc'], 
@@ -103,35 +134,46 @@ class Training:
             if Info.FBeta < measures_on_dev['fbeta'].round(4):                
                 Info.CurTolerance = -1
                 Info.FBeta = measures_on_dev['fbeta'].round(4)
-                torch.save(model.state_dict(), f'{Info.PATH}{os.sep}state_dict.pt')
-                f = io.FileIO(f'{Info.PATH}{os.sep}stats.txt', 'w')
-                pickle.dump(Info, f)
+                torch.save(model.state_dict(), f'{Info.PATH}{os.sep}state_dict.pt')                
 
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Loss", train_loss, Info.Epoch)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}FBeta", measures['train_fbeta'], Info.Epoch)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Accuracy", measures['train_acc'], Info.Epoch)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}FScore", measures['train_fscore'], Info.Epoch)            
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Precision", measures['train_prec'], Info.Epoch)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}Recall", measures['train_recall'], Info.Epoch)            
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Train{os.sep}AUC", measures['train_auc'], Info.Epoch)            
+            save = {}                                           
+            for x in Info.info_list: save.update({x : getattr(Info, x)})
+            file_ = open(f'{Info.PATH}{os.sep}stats.txt', 'w')
+            json_save = json.dump(save, file_, skipkeys=True, ensure_ascii=False)            
+            file_.close()         
+            
+            df = pd.DataFrame([], columns=header)
 
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Loss", measures['dev_loss'], Info.Epoch)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}FBeta", measures['dev_fbeta'], Info.Epoch)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Accuracy", measures['dev_acc'], Info.Epoch)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}FScore", measures['dev_fscore'], Info.Epoch)            
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Precision", measures['dev_prec'], Info.Epoch)
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}Recall", measures['dev_recall'], Info.Epoch)            
-                Info.Writer.add_scalar(f"{Info.Name}{os.sep}Validation{os.sep}AUC", measures['dev_auc'], Info.Epoch)
+            df.concat(pd.Series(Info.Name, 'Train', 'FBeta', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_fbeta']))
+            df.concat(pd.Series(Info.Name, 'Train', 'Loss', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_loss']))
+            df.concat(pd.Series(Info.Name, 'Train', 'Accuracy', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_acc']))
+            df.concat(pd.Series(Info.Name, 'Train', 'Precision', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_prec']))
+            df.concat(pd.Series(Info.Name, 'Train', 'Recall', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_recall']))
+            df.concat(pd.Series(Info.Name, 'Train', 'AUC', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_auc']))
+            df.concat(pd.Series(Info.Name, 'Train', 'FScore', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_fscore']))
 
-                Info.Writer.flush()
+            df.concat(pd.Series(Info.Name, 'Validation', 'FBeta', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_fbeta']))
+            df.concat(pd.Series(Info.Name, 'Validation', 'Loss', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_loss']))
+            df.concat(pd.Series(Info.Name, 'Validation', 'Accuracy', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_acc']))
+            df.concat(pd.Series(Info.Name, 'Validation', 'Precision', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_prec']))
+            df.concat(pd.Series(Info.Name, 'Validation', 'Recall', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_recall']))
+            df.concat(pd.Series(Info.Name, 'Validation', 'AUC', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_auc']))
+            df.concat(pd.Series(Info.Name, 'Validation', 'FScore', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_fscore']))
+
+            df.to_csv(f'{Info.BoardX}\\data.csv' 'a')
 
             Info.CurTolerance+= 1
             Info.Epoch += 1                
 
             if Info.CurTolerance == Info.Tolerance or Info.Epoch == Info.Epochs :
                 Info.Completed = True
-                f = io.FileIO(f'{Info.PATH}{os.sep}stats.txt', 'w')
-                pickle.dump(Info, f)
+                save = {}                                           
+                for x in Info.info_list: save.update({x : getattr(Info, x)})
+                file_ = open(f'{Info.PATH}{os.sep}stats.txt', 'w')
+                json_save = json.dump(save, file_, skipkeys=True, ensure_ascii=False)            
+                file_.close()         
+                break
+
             pbar.set_postfix(measures)     
             e_measures += [measures]
         return pd.DataFrame(e_measures), model

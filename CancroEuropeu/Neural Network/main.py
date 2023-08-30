@@ -16,8 +16,9 @@ from numpy import random
 from torch import nn
 import warnings
 import pickle
+import binascii
 import torch
-import gc
+import gc, json
 import os
 import io
 
@@ -36,19 +37,33 @@ selected_models = Models.select_models(ModelName[Info.Name])
 
 
 evaluation = Evaluation()
-    
+
+remove = ['args', 'update_path', 'info_list', 'Writer', 'Activation', 'default']
+Info.info_list = [x for x in dir(Info) if not x.startswith('_')]    
+for x in remove: Info.info_list.remove(x)
+
 for neural_model_name in selected_models:    
     Info.Completed = False
     Info.update_path(neural_model_name.name)    
     
     resume_training = os.path.exists(f'{Info.PATH}{os.sep}stats.txt')
 
-    if resume_training:    
-        f = io.FileIO(f'{Info.PATH}{os.sep}stats.txt', 'r')
-        Info = pickle.load(f)
-        if Info.Completed: 
-            pass
-
+    if resume_training and os.path.getsize(f'{Info.PATH}{os.sep}stats.txt') > 0:                    
+        file_ = open(f'{Info.PATH}{os.sep}stats.txt', 'r')
+        json_save = file_.read()
+        file_.close()                
+        info_dict = json.loads(json_save)
+        for x, y in info_dict.items():
+            try:
+                if float(y) == int(y):
+                    setattr(Info, x, int(y))
+                else:
+                    setattr(Info, x, float(y))
+            except:
+                setattr(Info, x, y)
+                    
+        if bool(Info.Completed) or Info.Epoch == Info.Epochs: 
+            continue
     os.makedirs(Info.PATH, exist_ok=True)
     os.makedirs(Info.BoardX, exist_ok=True)    
     print(f"\n-------------------- Current model: {neural_model_name.name} --------------------\n")
@@ -82,3 +97,8 @@ for neural_model_name in selected_models:
     #
     #torch.cuda.empty_cache()
     #gc.collect()
+    
+    
+    #  74.88it/s   50m59s  # 
+    #  LR_ 5e-5_           #
+    #  Weight_ 1e-8_       #
