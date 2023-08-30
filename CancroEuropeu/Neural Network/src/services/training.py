@@ -165,17 +165,17 @@ class Training:
             Info.CurTolerance+= 1
             Info.Epoch += 1                
 
-            if Info.CurTolerance == Info.Tolerance or Info.Epoch == Info.Epochs :
-                Info.Completed = True
-                save = {}                                           
-                for x in Info.info_list: save.update({x : getattr(Info, x)})
-                file_ = open(f'{Info.PATH}{os.sep}stats.txt', 'w')
-                json_save = json.dump(save, file_, skipkeys=True, ensure_ascii=False)            
-                file_.close()         
+            if Info.CurTolerance == Info.Tolerance:
                 break
-
             pbar.set_postfix(measures)     
             e_measures += [measures]
+        Info.Completed = True
+        save = {}                                           
+        for x in Info.info_list: save.update({x : getattr(Info, x)})
+        file_ = open(f'{Info.PATH}{os.sep}stats.txt', 'w')
+        json_save = json.dump(save, file_, skipkeys=True, ensure_ascii=False)            
+        file_.close()         
+
         return pd.DataFrame(e_measures), model
 
     def verify_images(self, name, test_loader, batch_size, model_ft, label_desc, grad_layer):               
