@@ -118,7 +118,9 @@ class Training:
     def train_and_evaluate(self, model, train_loader, dev_loader, criterion):                
         e_measures = []        
         pbar = tqdm(range(Info.Epoch, self.num_epochs))        
-        header = ['model', 'mode', 'metric', 'epoch', 'lr', 'wd', 'value']        
+        header = ['model', 'mode', 'metric', 'epoch', 'lr', 'wd', 'value'] 
+        df = pd.DataFrame([], columns=header)
+        df.to_csv(f'{Info.BoardX}\\data.csv', mode='a', index=False)
         for e in pbar:
             measures_on_train = self.train_epoch(model, train_loader, criterion)            
             measures_on_dev = self.eval_model(model, dev_loader, criterion)
@@ -143,24 +145,27 @@ class Training:
             file_.close()         
             
             df = pd.DataFrame([], columns=header)
+            print(len(df))
 
-            df.loc[len(df)] = pd.Series([Info.Name, 'Train', 'FBeta', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_fbeta']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Train', 'Loss', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_loss']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Train', 'Accuracy', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_acc']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Train', 'Precision', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_prec']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Train', 'Recall', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_recall']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Train', 'AUC', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_auc']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Train', 'FScore', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_fscore']])
+            df.loc[len(df)] = [Info.Name, 'Train', 'FBeta', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_fbeta']]
+            df.loc[len(df)] = [Info.Name, 'Train', 'Loss', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_loss']]
+            df.loc[len(df)] = [Info.Name, 'Train', 'Accuracy', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_acc']]
+            df.loc[len(df)] = [Info.Name, 'Train', 'Precision', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_prec']]
+            df.loc[len(df)] = [Info.Name, 'Train', 'Recall', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_recall']]
+            df.loc[len(df)] = [Info.Name, 'Train', 'AUC', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_auc']]
+            df.loc[len(df)] = [Info.Name, 'Train', 'FScore', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_fscore']]
 
-            df.loc[len(df)] = pd.Series([Info.Name, 'Validation', 'FBeta', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_fbeta']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Validation', 'Loss', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_loss']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Validation', 'Accuracy', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_acc']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Validation', 'Precision', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_prec']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Validation', 'Recall', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_recall']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Validation', 'AUC', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_auc']])
-            df.loc[len(df)] = pd.Series([Info.Name, 'Validation', 'FScore', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_fscore']])
-
-            df.to_csv(f'{Info.BoardX}\\data.csv' 'a')
+            df.loc[len(df)] = [Info.Name, 'Validation', 'FBeta', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_fbeta']]
+            df.loc[len(df)] = [Info.Name, 'Validation', 'Loss', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_loss']]
+            df.loc[len(df)] = [Info.Name, 'Validation', 'Accuracy', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_acc']]
+            df.loc[len(df)] = [Info.Name, 'Validation', 'Precision', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_prec']]
+            df.loc[len(df)] = [Info.Name, 'Validation', 'Recall', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_recall']]
+            df.loc[len(df)] = [Info.Name, 'Validation', 'AUC', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_auc']]
+            df.loc[len(df)] = [Info.Name, 'Validation', 'FScore', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_fscore']]
+            
+            print(len(df))
+            print(df)
+            df.to_csv(f'{Info.BoardX}\\data.csv', mode='a', index=False, header=False)
 
             Info.CurTolerance+= 1
             Info.Epoch += 1                
