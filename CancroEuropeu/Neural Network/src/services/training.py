@@ -119,9 +119,11 @@ class Training:
         e_measures = []        
         pbar = tqdm(range(Info.Epoch, self.num_epochs))        
         header = ['model', 'mode', 'metric', 'epoch', 'lr', 'wd', 'value'] 
-        df = pd.DataFrame([], columns=header)
         if Info.Epoch == 0:
+            df = pd.DataFrame([header])
             df.to_csv(f'{Info.BoardX}\\data.csv', mode='a', index=False)
+        else: 
+            df = pd.DataFrame([])
         for e in pbar:
             measures_on_train = self.train_epoch(model, train_loader, criterion)            
             measures_on_dev = self.eval_model(model, dev_loader, criterion)
@@ -145,8 +147,6 @@ class Training:
             json_save = json.dump(save, file_, skipkeys=True, ensure_ascii=False)            
             file_.close()         
             
-            df = pd.DataFrame([], columns=header)
-            print(len(df))
 
             df.loc[len(df)] = [Info.Name, 'Train', 'FBeta', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_fbeta']]
             df.loc[len(df)] = [Info.Name, 'Train', 'Loss', Info.Epoch, Info.LR, Info.WeightDecay, measures['train_loss']]
@@ -164,9 +164,9 @@ class Training:
             df.loc[len(df)] = [Info.Name, 'Validation', 'AUC', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_auc']]
             df.loc[len(df)] = [Info.Name, 'Validation', 'FScore', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_fscore']]
             
-            print(len(df))
-            print(df)
             df.to_csv(f'{Info.BoardX}\\data.csv', mode='a', index=False, header=False)
+
+            df = pd.DataFrame([], columns=header)
 
             Info.CurTolerance+= 1
             Info.Epoch += 1                
