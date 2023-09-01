@@ -22,8 +22,9 @@ import gc, json
 import os
 import io
 
-warnings.filterwarnings('ignore')
-random.RandomState(1)
+#warnings.filterwarnings("ignore")
+#warnings.filterwarnings("error")
+#random.RandomState(1)
 #constants
 constants = Info.args()
 batch_size = constants['batch_size']
@@ -43,12 +44,13 @@ Info.info_list = [x for x in dir(Info) if not x.startswith('_')]
 for x in remove: Info.info_list.remove(x)
 
 for neural_model_name in selected_models:    
-    Info.Completed = False
+    Info.Completed = 0
     Info.update_path(neural_model_name.name)    
     
     resume_training = os.path.exists(f'{Info.PATH}{os.sep}stats.txt')
-
-    if resume_training and os.path.getsize(f'{Info.PATH}{os.sep}stats.txt') > 0:                    
+    has_model = os.path.exists(f'{Info.PATH}{os.sep}state_dict.pt')
+    stats_and_model = resume_training and has_model
+    if stats_and_model:                    
         file_ = open(f'{Info.PATH}{os.sep}stats.txt', 'r')
         json_save = file_.read()
         file_.close()                
@@ -61,7 +63,7 @@ for neural_model_name in selected_models:
                     setattr(Info, x, float(y))
             except:
                 setattr(Info, x, y)
-                    
+        Info.Epoch += 1           
         if bool(Info.Completed) or Info.Epoch == Info.Epochs: 
             continue
     os.makedirs(Info.PATH, exist_ok=True)
@@ -69,7 +71,7 @@ for neural_model_name in selected_models:
     print(f"\n-------------------- Current model: {neural_model_name.name} --------------------\n")
     neuralNetworkModels = NeuralNetworkModels()
     model_ft, input_size, grad_layer = neuralNetworkModels.initialize_model(neural_model_name, num_classes, 
-        feature_extract, use_pretrained = resume_training)
+        feature_extract, use_pretrained = stats_and_model)
 
     preProcessing = PreProcessing(Info.DataPath, input_size, input_size)
     neuralData = preProcessing.run()
@@ -78,8 +80,8 @@ for neural_model_name in selected_models:
     device = preLoading.selectDevice()    
     neuralLoader = preLoading.dataLoaders(batch_size, neuralData.train_data, neuralData.dev_data, neuralData.test_data)
 
-    modelFitData = neuralNetworkModels.optimize_model(feature_extract, model_ft, lr=Info.LR, momentum=Info.Momentum)    
-    training = Training(torch.optim.lr_scheduler.CosineAnnealingLR,  modelFitData.optimizer_ft, Info.Epochs)
+    modelFitData = neuralNetworkModels.optimize_model(feature_extract, model_ft, lr=Info.LR, momentum=Info.Momentum, use_pretrained=stats_and_model)    
+    training = Training(torch.optim.lr_scheduler.CosineAnnealingLR,  modelFitData.optimizer_ft, Info.Epochs, stats_and_model)
     criterion = nn.BCEWithLogitsLoss().cuda() if device.isCuda else nn.BCEWithLogitsLoss()
     dataframe, model_ft = training.train_and_evaluate(model_ft, neuralLoader.train_loader.loader, 
         neuralLoader.dev_loader.loader, criterion)      
@@ -98,7 +100,3 @@ for neural_model_name in selected_models:
     #torch.cuda.empty_cache()
     #gc.collect()
     
-    
-    #  74.88it/s   50m59s  # 
-    #  LR_ 5e-5_           #
-    #  Weight_ 1e-8_       #

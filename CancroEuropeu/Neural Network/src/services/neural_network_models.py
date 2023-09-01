@@ -108,11 +108,11 @@ class NeuralNetworkModels:
             print("Invalid model name, exiting...")
             exit()
         if use_pretrained:
-            model_ft.load_state_dict(torch.load(f'{Info.PATH}{os.sep}state_dict.pt'))
+            model_ft.load_state_dict(torch.load(f'{Info.PATH}{os.sep}state_dict.pt')['model'])
         return model_ft, input_size, grad_layer
 
     def optimize_model(self, feature_extract, model_ft, optimizer=False, 
-                    lr:float=0.001, momentum:float=0.9) -> ModelFitData:
+                    lr:float=0.001, momentum:float=0.9, use_pretrained:bool=False) -> ModelFitData:
         model_ft = model_ft.to(Info.Device)
 
         params_to_update = model_ft.parameters()
@@ -126,10 +126,11 @@ class NeuralNetworkModels:
         else:
             for name,param in model_ft.named_parameters():
                 if param.requires_grad == True:
-                    print("\t",name)                               
+                    print("\t",name)            
+        
         optimizer_ft = eval(optimizer) if optimizer else optim.SGD(params_to_update, lr=lr, momentum=momentum, 
                                                             weight_decay=Info.WeightDecay)
-        
+        if use_pretrained: optimizer_ft.load_state_dict(torch.load(f'{Info.PATH}{os.sep}state_dict.pt')['optim'])
         return ModelFitData(optimizer_ft, model_ft)
 
     def verify_predict_before_training(self, deviceData: DeviceData, neuralLoader: NeuralLoader, modelFitData: ModelFitData):

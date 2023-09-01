@@ -26,7 +26,7 @@ class Info():
     CurTolerance = 0
     FileName = ''
     info_list = []
-    Completed = False
+    Completed = 0
     
     @staticmethod
     def args():

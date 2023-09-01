@@ -21,11 +21,13 @@ import io
 
 
 class Training:   
-    def __init__(self, scheduler, optimizer, num_epochs):
+    def __init__(self, scheduler, optimizer, num_epochs, use_pretrained:bool=False):
         self.optimizer = optimizer
         self.num_epochs = num_epochs
-        self.scheduler = scheduler(optimizer, T_max=num_epochs, last_epoch=-1)
-        for i in range(Info.Epoch): self.scheduler.step()
+
+        self.scheduler = scheduler(optimizer, T_max=num_epochs, last_epoch=Info.Epoch - 1)
+        if use_pretrained:             
+            self.scheduler.load_state_dict(torch.load(f'{Info.PATH}{os.sep}state_dict.pt')['lr_scheduler'])
         
     def train_epoch(self, model, trainLoader, criterion):
         model.train()
@@ -119,11 +121,8 @@ class Training:
         e_measures = []        
         pbar = tqdm(range(Info.Epoch, self.num_epochs))        
         header = ['model', 'mode', 'metric', 'epoch', 'lr', 'wd', 'value'] 
-        if Info.Epoch == 0:
-            df = pd.DataFrame([header])
-            df.to_csv(f'{Info.BoardX}\\data.csv', mode='a', index=False)
-        else: 
-            df = pd.DataFrame([])
+        df = pd.DataFrame([header]) if Info.Epoch == 0 else pd.DataFrame([], columns=header)                    
+            
         for e in pbar:
             measures_on_train = self.train_epoch(model, train_loader, criterion)            
             measures_on_dev = self.eval_model(model, dev_loader, criterion)
@@ -139,12 +138,16 @@ class Training:
             if Info.FBeta < measures_on_dev['fbeta'].round(4):                
                 Info.CurTolerance = -1
                 Info.FBeta = measures_on_dev['fbeta'].round(4)
-                torch.save(model.state_dict(), f'{Info.PATH}{os.sep}state_dict.pt')                
+                torch.save({
+                    'model' : model.state_dict(),
+                    'optim' : self.optim.state_dict(),
+                    'lr_scheduler' : self.scheduler.state_dict()
+                }, f'{Info.PATH}{os.sep}state_dict.pt')                
 
             save = {}                                           
             for x in Info.info_list: save.update({x : getattr(Info, x)})
             file_ = open(f'{Info.PATH}{os.sep}stats.txt', 'w')
-            json_save = json.dump(save, file_, skipkeys=True, ensure_ascii=False)            
+            json.dump(save, file_, skipkeys=True, ensure_ascii=False)            
             file_.close()         
             
 
@@ -164,18 +167,16 @@ class Training:
             df.loc[len(df)] = [Info.Name, 'Validation', 'AUC', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_auc']]
             df.loc[len(df)] = [Info.Name, 'Validation', 'FScore', Info.Epoch, Info.LR, Info.WeightDecay, measures['dev_fscore']]
             
-            df.to_csv(f'{Info.BoardX}\\data.csv', mode='a', index=False, header=False)
-
-            df = pd.DataFrame([], columns=header)
-
+            df.to_csv(f'{Info.BoardX}{os.sep}data.csv', mode='a', index=False, header=False)            
+            df = pd.DataFrame([], columns=header)            
             Info.CurTolerance+= 1
             Info.Epoch += 1                
 
-            if Info.CurTolerance == Info.Tolerance:
-                break
             pbar.set_postfix(measures)     
             e_measures += [measures]
-        Info.Completed = True
+            if Info.CurTolerance == Info.Tolerance:
+                break
+        Info.Completed = 1
         save = {}                                           
         for x in Info.info_list: save.update({x : getattr(Info, x)})
         file_ = open(f'{Info.PATH}{os.sep}stats.txt', 'w')
