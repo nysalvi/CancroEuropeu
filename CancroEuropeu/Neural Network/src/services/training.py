@@ -140,7 +140,7 @@ class Training:
                 Info.FBeta = measures_on_dev['fbeta'].round(4)
                 torch.save({
                     'model' : model.state_dict(),
-                    'optim' : self.optim.state_dict(),
+                    'optim' : self.optimizer.state_dict(),
                     'lr_scheduler' : self.scheduler.state_dict()
                 }, f'{Info.PATH}{os.sep}state_dict.pt')                
 
