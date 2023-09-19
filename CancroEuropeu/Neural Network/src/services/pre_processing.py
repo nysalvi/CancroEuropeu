@@ -1,9 +1,11 @@
+from decimal import ROUND_CEILING
 from albumentations.pytorch import ToTensorV2
 from ..utils.make_dataset import make_dataset
 from ..model.neural_data import NeuralData
 from ..model.dataset import DataSet
 from torchvision import transforms
 import albumentations as A
+import math
 import os
 
 def find_classes(self, directory: str) -> tuple[list[str], dict[str, int]]:
@@ -29,19 +31,20 @@ class PreProcessing:
         pass
 
     def run(self, train_transform=None, dev_transform=None, test_transform=None) -> NeuralData:       
+        #1.1428571428571428571428571428571                    
         train = A.Compose([            
             A.OneOf([
                 A.Resize(self.height, self.width, p=0.2), 
                 A.Compose([
-                    A.Resize(256, 256), 
+                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
                     A.RandomResizedCrop(self.height, self.width, scale=(0.35, 0.95)),
                 ], p=0.2),
                 A.Compose([
-                    A.Resize(256, 256), 
+                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
                     A.CenterCrop(self.height, self.width),
                 ], p=0.2),
                 A.Compose([
-                    A.Resize(256, 256), 
+                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
                     A.RandomCrop(self.height, self.width),
                 ], p=0.2),
                 A.Compose([
@@ -67,15 +70,15 @@ class PreProcessing:
             A.OneOf([
                 A.Resize(self.height, self.width, p=0.2), 
                 A.Compose([
-                    A.Resize(256, 256), 
+                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
                     A.RandomResizedCrop(self.height, self.width, scale=(0.35, 0.95)),
                 ], p=0.2),
                 A.Compose([
-                    A.Resize(256, 256), 
+                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
                     A.CenterCrop(self.height, self.width),
                 ], p=0.2),
                 A.Compose([
-                    A.Resize(256, 256), 
+                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
                     A.RandomCrop(self.height, self.width),
                 ], p=0.2),
                 A.Compose([
@@ -116,20 +119,20 @@ class PreProcessing:
         #    ])
         #
 
-        if test_transform:
-            test = eval(test_transform)
-        else:
-            #test = transforms.Compose([                                    
-            #    transforms.Resize(self.input_size),        
-            #    transforms.ToTensor(),
-            #    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])            
-            #])
-            test = A.Compose([
-                A.Resize(self.height, self.width, always_apply=True), 
-                A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0, always_apply=True),
-                A.ToFloat(max_value=255, always_apply=True),
-                ToTensorV2(transpose_mask=True, always_apply=True)
-            ])
+        #if test_transform:
+        #    test = eval(test_transform)
+        #else:
+        #    test = transforms.Compose([                                    
+        #        transforms.Resize(self.input_size),        
+        #        transforms.ToTensor(),
+        #        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])            
+        #    ])
+        test = A.Compose([
+            A.Resize(self.height, self.width, always_apply=True), 
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0, always_apply=True),
+            A.ToFloat(max_value=255, always_apply=True),
+            ToTensorV2(transpose_mask=True, always_apply=True)
+        ])
 
         data_transforms = {
             'train' : train,
