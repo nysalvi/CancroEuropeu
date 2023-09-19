@@ -90,8 +90,9 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--files', type=str, nargs='+', required=True, help='files to load parameters args;')
     
     args = vars(parser.parse_args())
-    dict_list = toDictionary(args['path'], args['files'])    
-    
+    dict_list = toDictionary(args['path'], args['files'])        
+
+    del parser
     for file_ in dict_list:
         temp_keys = ''
         constant_keys = []
@@ -108,10 +109,8 @@ if __name__ == "__main__":
         names, values = list(file_.keys()), list(file_.values())                      
         
         del constant_keys
-        del file_
-        del dict_list
-        del args
-        del parser
+        #del file_
+        #del dict_list        
 
         indexes = [len(x) - 1 for x in values]
         reset = copy.deepcopy(indexes)
@@ -127,8 +126,7 @@ if __name__ == "__main__":
                 args+= f'--{names[i]} {values[i][indexes[i]]} '                                        
             #the_keys.insert(0, run)
 
-            if os.system(f'{run} {temp_keys} {args}') != 0: exit()
-            
+            if os.system(f'{run} {temp_keys} {args}') != 0: exit()            
             #subprocess.run(f'python3 {run} {temp_keys} {args}') 
             #subprocess.run(the_keys + new_keys)
             dynamicReduction(total, indexes, reset)            
