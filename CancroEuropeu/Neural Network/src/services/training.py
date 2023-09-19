@@ -38,7 +38,7 @@ class Training:
         scores = np.zeros(shape=len(trainLoader.dataset))        
         cont = 0
         correct = 0
-        for X, y in trainLoader:    
+        for X, y in trainLoader:                
             X, y = X.to(Info.Device), y.to(Info.Device)            
             ground_truth[cont:cont + len(X)] = y.cpu().data.numpy()                
 
@@ -64,14 +64,13 @@ class Training:
             losses.append(loss.item())
             correct += (y_pred == y).sum().cpu().data.numpy()                
             cont+=len(X)
-
         self.scheduler.step()
 
         acc = correct/total
-        fbeta = fbeta_score(ground_truth, prediction, beta=0.5)                                                                            
-        fscore = f1_score(ground_truth, prediction)
-        precision = precision_score(ground_truth, prediction)
-        recall = recall_score(ground_truth, prediction)
+        fbeta = fbeta_score(ground_truth, prediction, beta=0.5, zero_division=np.nan)                                                                            
+        fscore = f1_score(ground_truth, prediction, zero_division=np.nan)
+        precision = precision_score(ground_truth, prediction, zero_division=np.nan)
+        recall = recall_score(ground_truth, prediction, zero_division=np.nan)
         fpr, tpr, _ = roc_curve(ground_truth, scores)
         roc_auc = auc(fpr, tpr)
 
@@ -106,9 +105,9 @@ class Training:
             #ground_truth = [x.astype(int) for x in ground_truth]
             #prediction = [x.astype(int) for x in prediction]
             fbeta = fbeta_score(ground_truth, prediction, beta=0.5)                                                                            
-            fscore = f1_score(ground_truth, prediction)
-            precision = precision_score(ground_truth, prediction)
-            recall = recall_score(ground_truth, prediction)
+            fscore = f1_score(ground_truth, prediction, zero_division=np.nan)
+            precision = precision_score(ground_truth, prediction, zero_division=np.nan)
+            recall = recall_score(ground_truth, prediction, zero_division=np.nan)
             fpr, tpr, _ = roc_curve(ground_truth, scores)
             roc_auc = auc(fpr, tpr)
             
@@ -207,6 +206,7 @@ class Training:
             X, y = X.to('cuda').requires_grad_(), y.numpy()
             fig = plt.figure(figsize=(24, 7))
             output = model_ft(X)
+
             y_pred = (nn.Sigmoid()(output) >= 0.5).int().cpu().numpy().squeeze()
 
             for j in range(0, list(X.shape)[0]):                                    
