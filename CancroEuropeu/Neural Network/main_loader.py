@@ -87,11 +87,12 @@ def dynamicReduction(i, indexes:List[int], reset:List[int]):
 if __name__ == "__main__":    
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--path', type=str, default=f'.{os.sep}config{os.sep}', help='path where config files are')
+    parser.add_argument('--augs', type=str, default=None, help='augmentation to apply to train dataset')
     parser.add_argument('-f', '--files', type=str, nargs='+', required=True, help='files to load parameters args;')
     
-    args = vars(parser.parse_args())
-    dict_list = toDictionary(args['path'], args['files'])        
-
+    argument = vars(parser.parse_args())
+    dict_list = toDictionary(argument['path'], argument['files'])        
+        
     del parser
     for file_ in dict_list:
         temp_keys = ''
@@ -126,7 +127,12 @@ if __name__ == "__main__":
                 args+= f'--{names[i]} {values[i][indexes[i]]} '                                        
             #the_keys.insert(0, run)
 
-            if os.system(f'{run} {temp_keys} {args}') != 0: exit()            
+            if argument['augs']:
+                transform = open(os.path.join('augs', argument['augs'])).read().replace(' ', '').replace('\n', '').replace('\t', '')                
+                to_run = f'{run} {temp_keys} {args} --Train {transform}'
+            else:
+                to_run = f'{run} {temp_keys} {args}'                        
+            if os.system(to_run) != 0: exit()            
             #subprocess.run(f'python3 {run} {temp_keys} {args}') 
             #subprocess.run(the_keys + new_keys)
             dynamicReduction(total, indexes, reset)            
