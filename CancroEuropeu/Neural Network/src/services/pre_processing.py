@@ -30,103 +30,26 @@ class PreProcessing:
         self.dataPath = dataPath
         pass
 
-    def run(self, train_transform=None, dev_transform=None, test_transform=None) -> NeuralData:       
+    def run(self, train) -> NeuralData:       
         #1.1428571428571428571428571428571                    
-        train = A.Compose([            
-            A.OneOf([
-                A.Resize(self.height, self.width, p=0.2), 
-                A.Compose([
-                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
-                    A.RandomResizedCrop(self.height, self.width, scale=(0.35, 0.95)),
-                ], p=0.2),
-                A.Compose([
-                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
-                    A.CenterCrop(self.height, self.width),
-                ], p=0.2),
-                A.Compose([
-                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
-                    A.RandomCrop(self.height, self.width),
-                ], p=0.2),
-                A.Compose([
-                    A.Resize(self.height, self.width), 
-                    A.CropAndPad(px=(15, 10, 15, 10), keep_size=True, sample_independently=True)
-                ], p=0.2)
-            ], p=1),
-            A.OneOf([
-                A.Defocus(radius=(2, 4), alias_blur=(0.1, 0.3), p=0.33), 
-                A.MedianBlur(blur_limit=3, p=0.33),
-                A.MotionBlur(blur_limit=11, allow_shifted=True, p=0.33),
-            ], p=0.75),
-            A.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1, p=0.5),
-            A.RandomBrightnessContrast(brightness_limit=(-0.25, 0.15), contrast_limit=(-0.25, 0.3), brightness_by_max=False, p=0.5),
-            A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(p=0.5),
+
+        if train: 
+            train = eval(train)            
+        else:
+            train = A.Compose([
+                A.Resize(self.height, self.width, always_apply=True), 
+                A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0, always_apply=True),
+                A.ToFloat(max_value=255, always_apply=True),
+                ToTensorV2(transpose_mask=True, always_apply=True)
+            ])
+
+        dev = A.Compose([
+            A.Resize(self.height, self.width, always_apply=True), 
+            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0, always_apply=True),
             A.ToFloat(max_value=255, always_apply=True),
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=1.0, always_apply=True),
-            ToTensorV2(transpose_mask=True, always_apply=True),
+            ToTensorV2(transpose_mask=True, always_apply=True)
         ])
-
-        dev = A.Compose([            
-            A.OneOf([
-                A.Resize(self.height, self.width, p=0.2), 
-                A.Compose([
-                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
-                    A.RandomResizedCrop(self.height, self.width, scale=(0.35, 0.95)),
-                ], p=0.2),
-                A.Compose([
-                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
-                    A.CenterCrop(self.height, self.width),
-                ], p=0.2),
-                A.Compose([
-                    A.Resize(math.ceil(self.height*1.142857), math.ceil(self.width*1.142857)), 
-                    A.RandomCrop(self.height, self.width),
-                ], p=0.2),
-                A.Compose([
-                    A.Resize(self.height, self.width), 
-                    A.CropAndPad(px=(15, 10, 15, 10), keep_size=True, sample_independently=True)
-                ], p=0.2)
-            ], p=1),
-            A.OneOf([
-                A.Defocus(radius=(2, 4), alias_blur=(0.1, 0.3), p=0.33), 
-                A.MedianBlur(blur_limit=3, p=0.33),
-                A.MotionBlur(blur_limit=11, allow_shifted=True, p=0.33),
-            ], p=0.75),
-            A.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1, p=0.5),
-            A.RandomBrightnessContrast(brightness_limit=(-0.25, 0.15), contrast_limit=(-0.25, 0.3), brightness_by_max=False, p=0.5),
-            A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(p=0.5),
-            A.ToFloat(max_value=255, always_apply=True),
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=1.0, always_apply=True),
-            ToTensorV2(transpose_mask=True, always_apply=True),
-        ])
-
-        #if train_transform:
-        #    train = eval(train_transform)
-        #else:
-        #    train = transforms.Compose([                
-        #        transforms.Resize(self.input_size),
-        #        transforms.ToTensor(),
-        #        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        #    ])
-        #
-        #if dev_transform:
-        #    dev = eval(dev_transform)
-        #else:
-        #    dev = transforms.Compose([                                    
-        #        transforms.Resize(self.input_size),        
-        #        transforms.ToTensor(),
-        #        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])            
-        #    ])
-        #
-
-        #if test_transform:
-        #    test = eval(test_transform)
-        #else:
-        #    test = transforms.Compose([                                    
-        #        transforms.Resize(self.input_size),        
-        #        transforms.ToTensor(),
-        #        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])            
-        #    ])
+       
         test = A.Compose([
             A.Resize(self.height, self.width, always_apply=True), 
             A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], max_pixel_value=255.0, always_apply=True),

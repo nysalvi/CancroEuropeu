@@ -27,7 +27,8 @@ class Info():
     FileName = ''
     info_list = []
     Completed = 0
-    
+    Train = None
+
     @staticmethod
     def args():
         parser = argparse.ArgumentParser()                
@@ -57,9 +58,9 @@ class Info():
         parser.add_argument('--BoardX', type=str, default=False, help='base folder name for saving tensorboard event files')        
         parser.add_argument('--DataPath', type=str, default=f'{os.path.join(os.getcwd(), "data")}', help='path for where the data is')
             #datasets
-        parser.add_argument('-Train', '--train_transform', type=str, default=f'', help='transformations for train dataset')        
-        parser.add_argument('-Dev', '--dev_transform', type=str, default=f'', help='transformations for validation dataset')        
-        parser.add_argument('-Test', '--test_transform', type=str, default=f'', help='transformations for test dataset')        
+        parser.add_argument('--Train', type=str, default=f'', help='transformations for train dataset')        
+        parser.add_argument('-Dev', type=str, default=f'', help='transformations for validation dataset')        
+        parser.add_argument('-Test', type=str, default=f'', help='transformations for test dataset')        
 
         args = vars(parser.parse_args())          
         constants = {}
@@ -69,7 +70,7 @@ class Info():
                 getattr(Info, key)
                 setattr(Info, key, value)                
             except AttributeError:
-                constants.update({key: value})                                                
+                constants.update({key: value})           
         return constants
 
     @staticmethod

@@ -67,10 +67,10 @@ class Training:
         self.scheduler.step()
 
         acc = correct/total
-        fbeta = fbeta_score(ground_truth, prediction, beta=0.5, zero_division=np.nan)                                                                            
-        fscore = f1_score(ground_truth, prediction, zero_division=np.nan)
-        precision = precision_score(ground_truth, prediction, zero_division=np.nan)
-        recall = recall_score(ground_truth, prediction, zero_division=np.nan)
+        fbeta = fbeta_score(ground_truth, prediction, beta=0.5, zero_division='warn')                                                                            
+        fscore = f1_score(ground_truth, prediction, zero_division='warn')
+        precision = precision_score(ground_truth, prediction, zero_division='warn')
+        recall = recall_score(ground_truth, prediction, zero_division='warn')
         fpr, tpr, _ = roc_curve(ground_truth, scores)
         roc_auc = auc(fpr, tpr)
 
@@ -104,10 +104,10 @@ class Training:
             acc = correct/total
             #ground_truth = [x.astype(int) for x in ground_truth]
             #prediction = [x.astype(int) for x in prediction]
-            fbeta = fbeta_score(ground_truth, prediction, beta=0.5)                                                                            
-            fscore = f1_score(ground_truth, prediction, zero_division=np.nan)
-            precision = precision_score(ground_truth, prediction, zero_division=np.nan)
-            recall = recall_score(ground_truth, prediction, zero_division=np.nan)
+            fbeta = fbeta_score(ground_truth, prediction, beta=0.5, zero_division='warn')                                                                            
+            fscore = f1_score(ground_truth, prediction, zero_division='warn')
+            precision = precision_score(ground_truth, prediction, zero_division='warn')
+            recall = recall_score(ground_truth, prediction, zero_division='warn')
             fpr, tpr, _ = roc_curve(ground_truth, scores)
             roc_auc = auc(fpr, tpr)
             
