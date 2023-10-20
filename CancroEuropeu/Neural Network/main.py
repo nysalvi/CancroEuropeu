@@ -26,6 +26,7 @@ import io
 #warnings.filterwarnings("error")
 #random.RandomState(1)
 #constants
+
 constants = Info.args()
 batch_size = constants['batch_size']
 num_classes = constants['num_classes']
@@ -34,8 +35,7 @@ feature_extract = constants['no_feature_extract']
 #End constants
 selected_models = Models.select_models(ModelName[Info.Name])
 #Images.download(currentTempFolder, "data.zip")
-#Images.unzip(currentTempFolder, "data.zip")g
-
+#Images.unzip(currentTempFolder, "data.zip")
 
 evaluation = Evaluation()
 
@@ -44,12 +44,15 @@ Info.info_list = [x for x in dir(Info) if not x.startswith('_')]
 for x in remove: Info.info_list.remove(x)
 
 for neural_model_name in selected_models:    
+    
     Info.Completed = 0
     Info.update_path(neural_model_name.name)    
     
     resume_training = os.path.exists(f'{Info.PATH}{os.sep}stats.txt')
     has_model = os.path.exists(f'{Info.PATH}{os.sep}state_dict.pt')
     stats_and_model = resume_training and has_model
+    train_aug = Info.Train
+    
     if stats_and_model:                    
         file_ = open(f'{Info.PATH}{os.sep}stats.txt', 'r')
         json_save = file_.read()
@@ -63,7 +66,7 @@ for neural_model_name in selected_models:
                     setattr(Info, x, float(y))
             except:
                 setattr(Info, x, y)
-        Info.Epoch += 1           
+        Info.Epoch += 1               
         if bool(Info.Completed) or Info.Epoch == Info.Epochs: 
             continue
     os.makedirs(Info.PATH, exist_ok=True)
@@ -72,9 +75,8 @@ for neural_model_name in selected_models:
     neuralNetworkModels = NeuralNetworkModels()
     model_ft, input_size, grad_layer = neuralNetworkModels.initialize_model(neural_model_name, num_classes, 
         feature_extract, use_pretrained = stats_and_model)
-
-    preProcessing = PreProcessing(Info.DataPath, input_size, input_size)
-    neuralData = preProcessing.run()
+    preProcessing = PreProcessing(Info.DataPath, input_size, input_size)    
+    neuralData = preProcessing.run(train_aug)
     preLoading = PreLoading()
     label_desc = preLoading.classDistribution(neuralData.train_data)
     device = preLoading.selectDevice()    
@@ -100,3 +102,5 @@ for neural_model_name in selected_models:
     #torch.cuda.empty_cache()
     #gc.collect()
     
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
