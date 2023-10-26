@@ -91,9 +91,9 @@ if __name__ == "__main__":
     
     argument = vars(parser.parse_args())
     dict_list = toDictionary(argument['path'], argument['files'])        
-        
+    
     del parser
-    for file_ in dict_list:
+    for file_ in dict_list:        
         temp_keys = ''
         constant_keys = []
         new_keys = []
@@ -106,6 +106,7 @@ if __name__ == "__main__":
 
         for key in constant_keys:
             file_.pop(key)        
+        
         names, values = list(file_.keys()), list(file_.values())                      
         
         del constant_keys
@@ -116,7 +117,13 @@ if __name__ == "__main__":
         reset = copy.deepcopy(indexes)
         #run = f'{os.curdir}{os.sep}Neural Network{os.sep}main.py'
         run = f'cmd /c py "{os.curdir}{os.sep}Neural Network{os.sep}main.py"'
-        total = len(values) - 1      
+        total = len(values) - 1  
+        if len(indexes) == 0:
+            new_args = ""                 
+            for i in range(0, len(new_keys), 2):
+                new_args+= f'{new_keys[i]} {new_keys[i + 1]} '                                        
+            if os.system(f'{run} {new_args}') != 0: exit()
+            break
         while indexes[0] >= 0:                        
             #the_keys = []
             args = ''
